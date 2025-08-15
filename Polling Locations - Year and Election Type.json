@@ -1,1286 +1,1287 @@
-
 {
-  "Beaconsfield": {
-    "lat": -41.202855,
-    "lng": 146.81868,
-    "electorate": "Bass"
-  },
-  "Beauty Point": {
-    "lat": -41.148875,
-    "lng": 146.8174034,
-    "electorate": "Bass"
-  },
-  "Branxholm": {
-    "lat": -41.16713,
-    "lng": 147.73628,
-    "electorate": "Bass"
-  },
-  "Bridport": {
-    "lat": -41.00278,
-    "lng": 147.3948,
-    "electorate": "Bass"
-  },
-  "Dilston": {
-    "lat": -41.31283,
-    "lng": 147.05309,
-    "electorate": "Bass"
-  },
-  "East Launceston": {
-    "lat": -41.44152,
-    "lng": 147.15203,
-    "electorate": "Bass"
-  },
-  "Exeter": {
-    "lat": -41.30062,
-    "lng": 146.95752,
-    "electorate": "Bass"
-  },
-  "Five Ways": {
-    "lat": -41.45903,
-    "lng": 147.1537,
-    "electorate": "Bass"
-  },
-  "George Town": {
-    "lat": -41.10686,
-    "lng": 146.82194,
-    "electorate": "Bass"
-  },
-  "George Town South": {
-    "lat": -41.1126,
-    "lng": 146.83307,
-    "electorate": "Bass"
-  },
-  "Gladstone": {
-    "lat": -40.96024,
-    "lng": 148.00863,
-    "electorate": "Bass"
-  },
-  "Glengarry": {
-    "lat": -41.33496863,
-    "lng": 146.8706875,
-    "electorate": "Bass"
-  },
-  "Gravelly Beach": {
-    "lat": -41.28332,
-    "lng": 146.97134,
-    "electorate": "Bass"
-  },
-  "Hillwood": {
-    "lat": -41.23623,
-    "lng": 146.97495,
-    "electorate": "Bass"
-  },
-  "Inveresk": {
-    "lat": -41.42136,
-    "lng": 147.1316,
-    "electorate": "Bass"
-  },
-  "Invermay": {
-    "lat": -41.428417,
-    "lng": 147.138618,
-    "electorate": "Bass"
-  },
-  "Karoola": {
-    "lat": -41.25423,
-    "lng": 147.14806,
-    "electorate": "Bass"
-  },
-  "Kelso": {
-    "lat": -41.10353,
-    "lng": 146.79368,
-    "electorate": "Bass"
-  },
-  "Kings Meadows": {
-    "lat": -41.46782,
-    "lng": 147.15942,
-    "electorate": "Bass"
-  },
-  "Lady Barron": {
-    "lat": -40.21062673,
-    "lng": 148.2393381,
-    "electorate": "Bass"
-  },
-  "Launceston": {
-    "lat": -41.43659,
-    "lng": 147.13718,
-    "electorate": "Bass"
-  },
-  "Launceston Central": {
-    "lat": -41.440961,
-    "lng": 147.142126,
-    "electorate": "Bass"
-  },
-  "Lebrina": {
-    "lat": -41.17742811,
-    "lng": 147.2274391,
-    "electorate": "Bass"
-  },
-  "Legana": {
-    "lat": -41.36317,
-    "lng": 147.04658,
-    "electorate": "Bass"
-  },
-  "Lilydale": {
-    "lat": -41.2522994,
-    "lng": 147.2149593,
-    "electorate": "Bass"
-  },
-  "Mowbray": {
-    "lat": -41.402444,
-    "lng": 147.132667,
-    "electorate": "Bass"
-  },
-  "Newnham": {
-    "lat": -41.38729,
-    "lng": 147.12779,
-    "electorate": "Bass"
-  },
-  "Newstead": {
-    "lat": -41.4470206,
-    "lng": 147.1572394,
-    "electorate": "Bass"
-  },
-  "Norwood": {
-    "lat": -41.46282,
-    "lng": 147.17329,
-    "electorate": "Bass"
-  },
-  "Nunamara": {
-    "lat": -41.3948,
-    "lng": 147.29453,
-    "electorate": "Bass"
-  },
-  "Pipers River": {
-    "lat": -41.10039,
-    "lng": 147.09152,
-    "electorate": "Bass"
-  },
-  "Prospect": {
-    "lat": -41.47301,
-    "lng": 147.12638,
-    "electorate": "Bass"
-  },
-  "Ravenswood": {
-    "lat": -41.41627,
-    "lng": 147.17662,
-    "electorate": "Bass"
-  },
-  "Ringarooma": {
-    "lat": -41.24219,
-    "lng": 147.73579,
-    "electorate": "Bass"
-  },
-  "Riverside": {
-    "lat": -41.40874,
-    "lng": 147.09891,
-    "electorate": "Bass"
-  },
-  "Riverside West": {
-    "lat": -41.43059,
-    "lng": 147.10612,
-    "electorate": "Bass"
-  },
-  "Rocherlea": {
-    "lat": -41.37763,
-    "lng": 147.12155,
-    "electorate": "Bass"
-  },
-  "Scottsdale": {
-    "lat": -41.15479201,
-    "lng": 147.5099324,
-    "electorate": "Bass"
-  },
-  "South Launceston": {
-    "lat": -41.45564437,
-    "lng": 147.1412667,
-    "electorate": "Bass"
-  },
-  "St Leonards": {
-    "lat": -41.4597,
-    "lng": 147.20031,
-    "electorate": "Bass"
-  },
-  "Summerhill": {
-    "lat": -41.46768,
-    "lng": 147.13,
-    "electorate": "Bass"
-  },
-  "Trevallyn": {
-    "lat": -41.43784,
-    "lng": 147.11397,
-    "electorate": "Bass"
-  },
-  "Waverley": {
-    "lat": -41.43332,
-    "lng": 147.19002,
-    "electorate": "Bass"
-  },
-  "West Launceston": {
-    "lat": -41.44964,
-    "lng": 147.1285,
-    "electorate": "Bass"
-  },
-  "Weymouth": {
-    "lat": -41.01518,
-    "lng": 147.15443,
-    "electorate": "Bass"
-  },
-  "Whitemark": {
-    "lat": -40.1220889,
-    "lng": 148.0169627,
-    "electorate": "Bass"
-  },
-  "Winnaleah": {
-    "lat": -41.09807,
-    "lng": 147.82404,
-    "electorate": "Bass"
-  },
-  "Youngtown": {
-    "lat": -41.48235,
-    "lng": 147.16386,
-    "electorate": "Bass"
-  },
   "Acton": {
+    "electorate": "Braddon",
     "lat": -41.07219,
-    "lng": 145.89258,
-    "electorate": "Braddon"
-  },
-  "Boat Harbour": {
-    "lat": -40.94507,
-    "lng": 145.63715,
-    "electorate": "Braddon"
-  },
-  "Burnie": {
-    "lat": -41.05317,
-    "lng": 145.90595,
-    "electorate": "Braddon"
-  },
-  "Calder": {
-    "lat": -41.06851,
-    "lng": 145.63121,
-    "electorate": "Braddon"
-  },
-  "Cooee": {
-    "lat": -41.040894,
-    "lng": 145.868525,
-    "electorate": "Braddon"
-  },
-  "Currie": {
-    "lat": -39.92984,
-    "lng": 143.85416,
-    "electorate": "Braddon"
-  },
-  "Devonport Central": {
-    "lat": -41.17993727,
-    "lng": 146.3577969,
-    "electorate": "Braddon"
-  },
-  "Devonport North West": {
-    "lat": -41.1727705,
-    "lng": 146.3374857,
-    "electorate": "Braddon"
-  },
-  "Devonport South": {
-    "lat": -41.18904,
-    "lng": 146.35208,
-    "electorate": "Braddon"
-  },
-  "Devonport West": {
-    "lat": -41.18583,
-    "lng": 146.34549,
-    "electorate": "Braddon"
-  },
-  "Don": {
-    "lat": -41.18256,
-    "lng": 146.31804,
-    "electorate": "Braddon"
-  },
-  "East Devonport": {
-    "lat": -41.17836,
-    "lng": 146.37111,
-    "electorate": "Braddon"
-  },
-  "Edith Creek": {
-    "lat": -40.96994,
-    "lng": 145.09329,
-    "electorate": "Braddon"
-  },
-  "Elliott": {
-    "lat": -41.09211,
-    "lng": 145.78229,
-    "electorate": "Braddon"
-  },
-  "Forest": {
-    "lat": -40.84865,
-    "lng": 145.24893,
-    "electorate": "Braddon"
-  },
-  "Forth": {
-    "lat": -41.18918,
-    "lng": 146.24862,
-    "electorate": "Braddon"
-  },
-  "Gawler": {
-    "lat": -41.18548,
-    "lng": 146.16007,
-    "electorate": "Braddon"
-  },
-  "Grassy": {
-    "lat": -40.04806384,
-    "lng": 144.0508167,
-    "electorate": "Braddon"
-  },
-  "Havenview": {
-    "lat": -41.08346,
-    "lng": 145.91081,
-    "electorate": "Braddon"
-  },
-  "Heybridge": {
-    "lat": -41.07515,
-    "lng": 145.98616,
-    "electorate": "Braddon"
-  },
-  "Highclere": {
-    "lat": -41.19046,
-    "lng": 145.8061,
-    "electorate": "Braddon"
-  },
-  "Irishtown": {
-    "lat": -40.91220617,
-    "lng": 145.1442312,
-    "electorate": "Braddon"
-  },
-  "Latrobe": {
-    "lat": -41.23912,
-    "lng": 146.41612,
-    "electorate": "Braddon"
-  },
-  "Marrawah": {
-    "lat": -40.92299,
-    "lng": 144.69693,
-    "electorate": "Braddon"
-  },
-  "Melrose": {
-    "lat": -41.24115487,
-    "lng": 146.2884587,
-    "electorate": "Braddon"
-  },
-  "Montello": {
-    "lat": -41.05996,
-    "lng": 145.89764,
-    "electorate": "Braddon"
-  },
-  "Moorleah": {
-    "lat": -40.98099,
-    "lng": 145.61629,
-    "electorate": "Braddon"
-  },
-  "Natone": {
-    "lat": -41.17022,
-    "lng": 145.92209,
-    "electorate": "Braddon"
-  },
-  "North Motton": {
-    "lat": -41.20705,
-    "lng": 146.10952,
-    "electorate": "Braddon"
-  },
-  "Penguin": {
-    "lat": -41.125897,
-    "lng": 146.068702,
-    "electorate": "Braddon"
-  },
-  "Port Sorell": {
-    "lat": -41.16525,
-    "lng": 146.5558,
-    "electorate": "Braddon"
-  },
-  "Preston": {
-    "lat": -41.29604,
-    "lng": 146.06239,
-    "electorate": "Braddon"
-  },
-  "Queenstown": {
-    "lat": -42.080415,
-    "lng": 145.557426,
-    "electorate": "Braddon"
-  },
-  "Riana": {
-    "lat": -41.2015,
-    "lng": 145.99908,
-    "electorate": "Braddon"
-  },
-  "Ridgley": {
-    "lat": -41.13937,
-    "lng": 145.83787,
-    "electorate": "Braddon"
-  },
-  "Rocky Cape": {
-    "lat": -40.90489,
-    "lng": 145.48664,
-    "electorate": "Braddon"
-  },
-  "Romaine": {
-    "lat": -41.07761,
-    "lng": 145.90144,
-    "electorate": "Braddon"
-  },
-  "Rosebery": {
-    "lat": -41.78006,
-    "lng": 145.53919,
-    "electorate": "Braddon"
-  },
-  "Sassafras": {
-    "lat": -41.28689,
-    "lng": 146.50295,
-    "electorate": "Braddon"
-  },
-  "Shorewell Park": {
-    "lat": -41.06122,
-    "lng": 145.88163,
-    "electorate": "Braddon"
-  },
-  "Sisters Beach": {
-    "lat": -40.91818,
-    "lng": 145.56498,
-    "electorate": "Braddon"
-  },
-  "Sisters Creek": {
-    "lat": -40.964713,
-    "lng": 145.573222,
-    "electorate": "Braddon"
-  },
-  "Smithton": {
-    "lat": -40.84838841,
-    "lng": 145.1161808,
-    "electorate": "Braddon"
-  },
-  "Somerset": {
-    "lat": -41.03815,
-    "lng": 145.82063,
-    "electorate": "Braddon"
-  },
-  "South Riana": {
-    "lat": -41.23446,
-    "lng": 145.97709,
-    "electorate": "Braddon"
-  },
-  "Sprent": {
-    "lat": -41.26221,
-    "lng": 146.15948,
-    "electorate": "Braddon"
-  },
-  "Spreyton": {
-    "lat": -41.21202,
-    "lng": 146.34454,
-    "electorate": "Braddon"
-  },
-  "Stanley": {
-    "lat": -40.7595,
-    "lng": 145.29099,
-    "electorate": "Braddon"
-  },
-  "Stowport": {
-    "lat": -41.11224,
-    "lng": 145.92863,
-    "electorate": "Braddon"
-  },
-  "Strahan": {
-    "lat": -42.153392,
-    "lng": 145.320432,
-    "electorate": "Braddon"
-  },
-  "Sulphur Creek": {
-    "lat": -41.09328,
-    "lng": 146.02373,
-    "electorate": "Braddon"
-  },
-  "Tullah": {
-    "lat": -41.737851,
-    "lng": 145.616967,
-    "electorate": "Braddon"
-  },
-  "Turners Beach": {
-    "lat": -41.15871,
-    "lng": 146.2447,
-    "electorate": "Braddon"
-  },
-  "Ulverstone Central": {
-    "lat": -41.155037,
-    "lng": 146.171973,
-    "electorate": "Braddon"
-  },
-  "Ulverstone East": {
-    "lat": -41.15494,
-    "lng": 146.19089,
-    "electorate": "Braddon"
-  },
-  "Ulverstone South": {
-    "lat": -41.16199,
-    "lng": 146.17143,
-    "electorate": "Braddon"
-  },
-  "Waratah": {
-    "lat": -41.44462,
-    "lng": 145.53128,
-    "electorate": "Braddon"
-  },
-  "Wesley Vale": {
-    "lat": -41.1887792,
-    "lng": 146.4562247,
-    "electorate": "Braddon"
-  },
-  "West Ulverstone": {
-    "lat": -41.14851,
-    "lng": 146.15899,
-    "electorate": "Braddon"
-  },
-  "Wivenhoe": {
-    "lat": -41.0695,
-    "lng": 145.93556,
-    "electorate": "Braddon"
-  },
-  "Wynyard Central": {
-    "lat": -40.99088,
-    "lng": 145.72865,
-    "electorate": "Braddon"
-  },
-  "Wynyard West": {
-    "lat": -40.98684,
-    "lng": 145.71684,
-    "electorate": "Braddon"
-  },
-  "Yolla": {
-    "lat": -41.12363,
-    "lng": 145.71977,
-    "electorate": "Braddon"
-  },
-  "Zeehan": {
-    "lat": -41.88794,
-    "lng": 145.33998,
-    "electorate": "Braddon"
-  },
-  "Austins Ferry": {
-    "lat": -42.77386,
-    "lng": 147.25087,
-    "electorate": "Clark"
-  },
-  "Battery Point": {
-    "lat": -42.89152,
-    "lng": 147.33268,
-    "electorate": "Clark"
-  },
-  "Battery Point West": {
-    "lat": -42.89108,
-    "lng": 147.32598,
-    "electorate": "Clark"
-  },
-  "Cascades": {
-    "lat": -42.89286681,
-    "lng": 147.3099678,
-    "electorate": "Clark"
-  },
-  "Chigwell": {
-    "lat": -42.81133,
-    "lng": 147.24084,
-    "electorate": "Clark"
-  },
-  "Claremont": {
-    "lat": -42.79416018,
-    "lng": 147.2497183,
-    "electorate": "Clark"
-  },
-  "Collinsvale": {
-    "lat": -42.83696,
-    "lng": 147.19837,
-    "electorate": "Clark"
-  },
-  "Dynnyrne": {
-    "lat": -42.89913,
-    "lng": 147.31855,
-    "electorate": "Clark"
-  },
-  "Fern Tree": {
-    "lat": -42.923168,
-    "lng": 147.260428,
-    "electorate": "Clark"
-  },
-  "Glenorchy": {
-    "lat": -42.830908,
-    "lng": 147.267619,
-    "electorate": "Clark"
-  },
-  "Glenorchy Central": {
-    "lat": -42.824143,
-    "lng": 147.282025,
-    "electorate": "Clark"
-  },
-  "Goodwood": {
-    "lat": -42.83189,
-    "lng": 147.29333,
-    "electorate": "Clark"
-  },
-  "Hobart City": {
-    "lat": -42.88072266,
-    "lng": 147.3318282,
-    "electorate": "Clark"
-  },
-  "Lenah Valley": {
-    "lat": -42.861704,
-    "lng": 147.291106,
-    "electorate": "Clark"
-  },
-  "Lower Sandy Bay": {
-    "lat": -42.909612,
-    "lng": 147.349511,
-    "electorate": "Clark"
-  },
-  "Merton": {
-    "lat": -42.84555,
-    "lng": 147.26505,
-    "electorate": "Clark"
-  },
-  "Moonah": {
-    "lat": -42.84612742,
-    "lng": 147.2997299,
-    "electorate": "Clark"
-  },
-  "Moonah East": {
-    "lat": -42.8472392,
-    "lng": 147.3072554,
-    "electorate": "Clark"
-  },
-  "Moonah North": {
-    "lat": -42.83843,
-    "lng": 147.29633,
-    "electorate": "Clark"
-  },
-  "Mount Nelson": {
-    "lat": -42.91353,
-    "lng": 147.32305,
-    "electorate": "Clark"
-  },
-  "Mount Stuart": {
-    "lat": -42.87507,
-    "lng": 147.29906,
-    "electorate": "Clark"
-  },
-  "New Town": {
-    "lat": -42.866018,
-    "lng": 147.31423,
-    "electorate": "Clark"
-  },
-  "New Town West": {
-    "lat": -42.86136,
-    "lng": 147.30396,
-    "electorate": "Clark"
-  },
-  "North Hobart Central": {
-    "lat": -42.87271,
-    "lng": 147.31425,
-    "electorate": "Clark"
-  },
-  "Roseneath": {
-    "lat": -42.78521,
-    "lng": 147.24012,
-    "electorate": "Clark"
-  },
-  "Rosetta": {
-    "lat": -42.822316,
-    "lng": 147.258831,
-    "electorate": "Clark"
-  },
-  "Sandy Bay": {
-    "lat": -42.89916,
-    "lng": 147.3266,
-    "electorate": "Clark"
-  },
-  "Sandy Bay Beach": {
-    "lat": -42.91389,
-    "lng": 147.35476,
-    "electorate": "Clark"
-  },
-  "South Hobart": {
-    "lat": -42.89497,
-    "lng": 147.31223,
-    "electorate": "Clark"
-  },
-  "Taroona": {
-    "lat": -42.94317,
-    "lng": 147.3531,
-    "electorate": "Clark"
-  },
-  "Waimea Heights": {
-    "lat": -42.90873,
-    "lng": 147.33711,
-    "electorate": "Clark"
-  },
-  "West Hobart": {
-    "lat": -42.88159,
-    "lng": 147.32031,
-    "electorate": "Clark"
-  },
-  "West Hobart Central": {
-    "lat": -42.88187,
-    "lng": 147.30889,
-    "electorate": "Clark"
-  },
-  "West Hobart South": {
-    "lat": -42.88763,
-    "lng": 147.31741,
-    "electorate": "Clark"
-  },
-  "Windermere": {
-    "lat": -42.79934,
-    "lng": 147.25846,
-    "electorate": "Clark"
+    "lng": 145.89258
   },
   "Adventure Bay": {
+    "electorate": "Franklin",
     "lat": -43.36172,
-    "lng": 147.32839,
-    "electorate": "Franklin"
+    "lng": 147.32839
   },
   "Alonnah": {
+    "electorate": "Franklin",
     "lat": -43.31727,
-    "lng": 147.24625,
-    "electorate": "Franklin"
+    "lng": 147.24625
   },
-  "Bellerive": {
-    "lat": -42.873,
-    "lng": 147.37263,
-    "electorate": "Franklin"
-  },
-  "Blackmans Bay": {
-    "lat": -42.996627,
-    "lng": 147.321846,
-    "electorate": "Franklin"
-  },
-  "Blackmans Bay South": {
-    "lat": -43.008365,
-    "lng": 147.319521,
-    "electorate": "Franklin"
-  },
-  "Cambridge": {
-    "lat": -42.83624,
-    "lng": 147.44195,
-    "electorate": "Franklin"
-  },
-  "Clarence": {
-    "lat": -42.87885,
-    "lng": 147.38962,
-    "electorate": "Franklin"
-  },
-  "Clarendon Vale": {
-    "lat": -42.8864538,
-    "lng": 147.4430762,
-    "electorate": "Franklin"
-  },
-  "Cradoc": {
-    "lat": -43.10599,
-    "lng": 147.03397,
-    "electorate": "Franklin"
-  },
-  "Cygnet": {
-    "lat": -43.15823579,
-    "lng": 147.0713781,
-    "electorate": "Franklin"
-  },
-  "Dover": {
-    "lat": -43.31059,
-    "lng": 147.01313,
-    "electorate": "Franklin"
-  },
-  "Geeveston": {
-    "lat": -43.162271,
-    "lng": 146.922048,
-    "electorate": "Franklin"
-  },
-  "Geilston Bay": {
-    "lat": -42.83886,
-    "lng": 147.34936,
-    "electorate": "Franklin"
-  },
-  "Glen Huon": {
-    "lat": -43.02819,
-    "lng": 146.9624,
-    "electorate": "Franklin"
-  },
-  "Howden": {
-    "lat": -43.02331,
-    "lng": 147.29143,
-    "electorate": "Franklin"
-  },
-  "Howrah": {
-    "lat": -42.88177,
-    "lng": 147.40387,
-    "electorate": "Franklin"
-  },
-  "Huonville": {
-    "lat": -43.023734,
-    "lng": 147.046989,
-    "electorate": "Franklin"
-  },
-  "Judbury": {
-    "lat": -42.9981,
-    "lng": 146.92811,
-    "electorate": "Franklin"
-  },
-  "Kettering": {
-    "lat": -43.12566,
-    "lng": 147.2467,
-    "electorate": "Franklin"
-  },
-  "Kingston": {
-    "lat": -42.9742845,
-    "lng": 147.307944,
-    "electorate": "Franklin"
-  },
-  "Kingston Beach": {
-    "lat": -42.98102,
-    "lng": 147.32245,
-    "electorate": "Franklin"
-  },
-  "Lauderdale": {
-    "lat": -42.90361386,
-    "lng": 147.4802177,
-    "electorate": "Franklin"
-  },
-  "Lindisfarne": {
-    "lat": -42.85178,
-    "lng": 147.36341,
-    "electorate": "Franklin"
-  },
-  "Lindisfarne Village": {
-    "lat": -42.847191,
-    "lng": 147.355152,
-    "electorate": "Franklin"
-  },
-  "Maranoa Heights": {
-    "lat": -42.99054,
-    "lng": 147.30882,
-    "electorate": "Franklin"
-  },
-  "Margate": {
-    "lat": -43.02826429,
-    "lng": 147.2609717,
-    "electorate": "Franklin"
-  },
-  "Middleton": {
-    "lat": -43.2313,
-    "lng": 147.25573,
-    "electorate": "Franklin"
-  },
-  "Montagu Bay": {
-    "lat": -42.86439,
-    "lng": 147.35336,
-    "electorate": "Franklin"
-  },
-  "Mornington": {
-    "lat": -42.85588,
-    "lng": 147.40216,
-    "electorate": "Franklin"
-  },
-  "Mountain River": {
-    "lat": -42.97612805,
-    "lng": 147.0938581,
-    "electorate": "Franklin"
-  },
-  "Ranelagh": {
-    "lat": -43.00901,
-    "lng": 147.03856,
-    "electorate": "Franklin"
-  },
-  "Risdon Vale": {
-    "lat": -42.81283,
-    "lng": 147.35367,
-    "electorate": "Franklin"
-  },
-  "Rokeby": {
-    "lat": -42.900608,
-    "lng": 147.439002,
-    "electorate": "Franklin"
-  },
-  "Sandfly": {
-    "lat": -42.98497,
-    "lng": 147.19567,
-    "electorate": "Franklin"
-  },
-  "Sandford": {
-    "lat": -42.94002,
-    "lng": 147.49566,
-    "electorate": "Franklin"
-  },
-  "Seven Mile Beach": {
-    "lat": -42.85432,
-    "lng": 147.5113,
-    "electorate": "Franklin"
-  },
-  "Snug": {
-    "lat": -43.06542,
-    "lng": 147.25411,
-    "electorate": "Franklin"
-  },
-  "South Arm": {
-    "lat": -43.02613,
-    "lng": 147.42013,
-    "electorate": "Franklin"
-  },
-  "Southport": {
-    "lat": -43.415763,
-    "lng": 146.961547,
-    "electorate": "Franklin"
-  },
-  "Tranmere": {
-    "lat": -42.891,
-    "lng": 147.40872,
-    "electorate": "Franklin"
-  },
-  "Warrane": {
-    "lat": -42.85189241,
-    "lng": 147.3845626,
-    "electorate": "Franklin"
-  },
-  "Woodbridge": {
-    "lat": -43.15999,
-    "lng": 147.23914,
-    "electorate": "Franklin"
+  "Austins Ferry": {
+    "electorate": "Clark",
+    "lat": -42.77386,
+    "lng": 147.25087
   },
   "Avoca": {
+    "electorate": "Lyons",
     "lat": -41.78247345,
-    "lng": 147.7192787,
-    "electorate": "Lyons"
+    "lng": 147.7192787
   },
   "Bagdad": {
+    "electorate": "Lyons",
     "lat": -42.62434,
-    "lng": 147.22359,
-    "electorate": "Lyons"
+    "lng": 147.22359
+  },
+  "Battery Point": {
+    "electorate": "Clark",
+    "lat": -42.89152,
+    "lng": 147.33268
+  },
+  "Battery Point West": {
+    "electorate": "Clark",
+    "lat": -42.89108,
+    "lng": 147.32598
+  },
+  "Beaconsfield": {
+    "electorate": "Bass",
+    "lat": -41.202855,
+    "lng": 146.81868
+  },
+  "Beauty Point": {
+    "electorate": "Bass",
+    "lat": -41.148875,
+    "lng": 146.8174034
+  },
+  "Bellerive": {
+    "electorate": "Franklin",
+    "lat": -42.873,
+    "lng": 147.37263
   },
   "Bicheno": {
+    "electorate": "Lyons",
     "lat": -41.87260055,
-    "lng": 148.3046221,
-    "electorate": "Lyons"
+    "lng": 148.3046221
+  },
+  "Blackmans Bay": {
+    "electorate": "Franklin",
+    "lat": -42.996627,
+    "lng": 147.321846
+  },
+  "Blackmans Bay South": {
+    "electorate": "Franklin",
+    "lat": -43.008365,
+    "lng": 147.319521
+  },
+  "Boat Harbour": {
+    "electorate": "Braddon",
+    "lat": -40.94507,
+    "lng": 145.63715
   },
   "Bothwell": {
+    "electorate": "Lyons",
     "lat": -42.38228,
-    "lng": 147.00629,
-    "electorate": "Lyons"
+    "lng": 147.00629
   },
   "Bracknell": {
+    "electorate": "Lyons",
     "lat": -41.65121,
-    "lng": 146.94335,
-    "electorate": "Lyons"
+    "lng": 146.94335
+  },
+  "Branxholm": {
+    "electorate": "Bass",
+    "lat": -41.16713,
+    "lng": 147.73628
   },
   "Bridgewater": {
+    "electorate": "Lyons",
     "lat": -42.73918,
-    "lng": 147.24375,
-    "electorate": "Lyons"
+    "lng": 147.24375
+  },
+  "Bridport": {
+    "electorate": "Bass",
+    "lat": -41.00278,
+    "lng": 147.3948
   },
   "Brighton": {
+    "electorate": "Lyons",
     "lat": -42.69877068,
-    "lng": 147.2573497,
-    "electorate": "Lyons"
+    "lng": 147.2573497
   },
   "Broadmarsh": {
+    "electorate": "Lyons",
     "lat": -42.65628,
-    "lng": 147.12662,
-    "electorate": "Lyons"
+    "lng": 147.12662
+  },
+  "Burnie": {
+    "electorate": "Braddon",
+    "lat": -41.05317,
+    "lng": 145.90595
+  },
+  "Calder": {
+    "electorate": "Braddon",
+    "lat": -41.06851,
+    "lng": 145.63121
+  },
+  "Cambridge": {
+    "electorate": "Franklin",
+    "lat": -42.83624,
+    "lng": 147.44195
   },
   "Campania": {
+    "electorate": "Lyons",
     "lat": -42.66717,
-    "lng": 147.42106,
-    "electorate": "Lyons"
+    "lng": 147.42106
   },
   "Campbell Town": {
+    "electorate": "Lyons",
     "lat": -41.927,
-    "lng": 147.49458,
-    "electorate": "Lyons"
+    "lng": 147.49458
   },
   "Carrick": {
+    "electorate": "Lyons",
     "lat": -41.53099,
-    "lng": 147.01128,
-    "electorate": "Lyons"
+    "lng": 147.01128
+  },
+  "Cascades": {
+    "electorate": "Clark",
+    "lat": -42.89286681,
+    "lng": 147.3099678
+  },
+  "Chigwell": {
+    "electorate": "Clark",
+    "lat": -42.81133,
+    "lng": 147.24084
   },
   "Chudleigh": {
+    "electorate": "Lyons",
     "lat": -41.55698,
-    "lng": 146.48139,
-    "electorate": "Lyons"
+    "lng": 146.48139
+  },
+  "Claremont": {
+    "electorate": "Clark",
+    "lat": -42.79416018,
+    "lng": 147.2497183
+  },
+  "Clarence": {
+    "electorate": "Franklin",
+    "lat": -42.87885,
+    "lng": 147.38962
+  },
+  "Clarendon Vale": {
+    "electorate": "Franklin",
+    "lat": -42.8864538,
+    "lng": 147.4430762
   },
   "Claude Road": {
+    "electorate": "Lyons",
     "lat": -41.43442,
-    "lng": 146.27413,
-    "electorate": "Lyons"
+    "lng": 146.27413
   },
   "Colebrook": {
+    "electorate": "Lyons",
     "lat": -42.53304333,
-    "lng": 147.3627427,
-    "electorate": "Lyons"
+    "lng": 147.3627427
   },
   "Coles Bay": {
+    "electorate": "Lyons",
     "lat": -42.12505,
-    "lng": 148.28572,
-    "electorate": "Lyons"
+    "lng": 148.28572
+  },
+  "Collinsvale": {
+    "electorate": "Clark",
+    "lat": -42.83696,
+    "lng": 147.19837
+  },
+  "Cooee": {
+    "electorate": "Braddon",
+    "lat": -41.040894,
+    "lng": 145.868525
   },
   "Copping": {
+    "electorate": "Lyons",
     "lat": -42.82049,
-    "lng": 147.80428,
-    "electorate": "Lyons"
+    "lng": 147.80428
+  },
+  "Cradoc": {
+    "electorate": "Franklin",
+    "lat": -43.10599,
+    "lng": 147.03397
   },
   "Cressy": {
+    "electorate": "Lyons",
     "lat": -41.68551,
-    "lng": 147.08074,
-    "electorate": "Lyons"
+    "lng": 147.08074
+  },
+  "Currie": {
+    "electorate": "Braddon",
+    "lat": -39.92984,
+    "lng": 143.85416
+  },
+  "Cygnet": {
+    "electorate": "Franklin",
+    "lat": -43.15823579,
+    "lng": 147.0713781
   },
   "Deloraine": {
+    "electorate": "Lyons",
     "lat": -41.52934,
-    "lng": 146.65926,
-    "electorate": "Lyons"
+    "lng": 146.65926
+  },
+  "Devonport Central": {
+    "electorate": "Braddon",
+    "lat": -41.17993727,
+    "lng": 146.3577969
+  },
+  "Devonport North West": {
+    "electorate": "Braddon",
+    "lat": -41.1727705,
+    "lng": 146.3374857
+  },
+  "Devonport South": {
+    "electorate": "Braddon",
+    "lat": -41.18904,
+    "lng": 146.35208
+  },
+  "Devonport West": {
+    "electorate": "Braddon",
+    "lat": -41.18583,
+    "lng": 146.34549
+  },
+  "Dilston": {
+    "electorate": "Bass",
+    "lat": -41.31283,
+    "lng": 147.05309
   },
   "Dodges Ferry": {
+    "electorate": "Lyons",
     "lat": -42.84863,
-    "lng": 147.62373,
-    "electorate": "Lyons"
+    "lng": 147.62373
+  },
+  "Don": {
+    "electorate": "Braddon",
+    "lat": -41.18256,
+    "lng": 146.31804
+  },
+  "Dover": {
+    "electorate": "Franklin",
+    "lat": -43.31059,
+    "lng": 147.01313
   },
   "Dromedary": {
+    "electorate": "Lyons",
     "lat": -42.72826,
-    "lng": 147.1787,
-    "electorate": "Lyons"
+    "lng": 147.1787
   },
   "Dunalley": {
+    "electorate": "Lyons",
     "lat": -42.88716415,
-    "lng": 147.812685,
-    "electorate": "Lyons"
+    "lng": 147.812685
+  },
+  "Dynnyrne": {
+    "electorate": "Clark",
+    "lat": -42.89913,
+    "lng": 147.31855
+  },
+  "East Devonport": {
+    "electorate": "Braddon",
+    "lat": -41.17836,
+    "lng": 146.37111
+  },
+  "East Launceston": {
+    "electorate": "Bass",
+    "lat": -41.44152,
+    "lng": 147.15203
+  },
+  "Edith Creek": {
+    "electorate": "Braddon",
+    "lat": -40.96994,
+    "lng": 145.09329
   },
   "Elizabeth Town": {
+    "electorate": "Lyons",
     "lat": -41.46167,
-    "lng": 146.56389,
-    "electorate": "Lyons"
+    "lng": 146.56389
+  },
+  "Elliott": {
+    "electorate": "Braddon",
+    "lat": -41.09211,
+    "lng": 145.78229
   },
   "Epping": {
+    "electorate": "Lyons",
     "lat": -41.75814,
-    "lng": 147.34904,
-    "electorate": "Lyons"
+    "lng": 147.34904
   },
   "Evandale": {
+    "electorate": "Lyons",
     "lat": -41.56717,
-    "lng": 147.24676,
-    "electorate": "Lyons"
+    "lng": 147.24676
+  },
+  "Exeter": {
+    "electorate": "Bass",
+    "lat": -41.30062,
+    "lng": 146.95752
+  },
+  "Fern Tree": {
+    "electorate": "Clark",
+    "lat": -42.923168,
+    "lng": 147.260428
   },
   "Fingal": {
+    "electorate": "Lyons",
     "lat": -41.63843418,
-    "lng": 147.9709241,
-    "electorate": "Lyons"
+    "lng": 147.9709241
+  },
+  "Five Ways": {
+    "electorate": "Bass",
+    "lat": -41.45903,
+    "lng": 147.1537
+  },
+  "Forest": {
+    "electorate": "Braddon",
+    "lat": -40.84865,
+    "lng": 145.24893
+  },
+  "Forth": {
+    "electorate": "Braddon",
+    "lat": -41.18918,
+    "lng": 146.24862
   },
   "Gagebrook": {
+    "electorate": "Lyons",
     "lat": -42.74903,
-    "lng": 147.27517,
-    "electorate": "Lyons"
+    "lng": 147.27517
+  },
+  "Gawler": {
+    "electorate": "Braddon",
+    "lat": -41.18548,
+    "lng": 146.16007
+  },
+  "Geeveston": {
+    "electorate": "Franklin",
+    "lat": -43.162271,
+    "lng": 146.922048
+  },
+  "Geilston Bay": {
+    "electorate": "Franklin",
+    "lat": -42.83886,
+    "lng": 147.34936
+  },
+  "George Town": {
+    "electorate": "Bass",
+    "lat": -41.10686,
+    "lng": 146.82194
+  },
+  "George Town South": {
+    "electorate": "Bass",
+    "lat": -41.1126,
+    "lng": 146.83307
+  },
+  "Gladstone": {
+    "electorate": "Bass",
+    "lat": -40.96024,
+    "lng": 148.00863
+  },
+  "Glen Huon": {
+    "electorate": "Franklin",
+    "lat": -43.02819,
+    "lng": 146.9624
+  },
+  "Glengarry": {
+    "electorate": "Bass",
+    "lat": -41.33496863,
+    "lng": 146.8706875
   },
   "Glenora": {
+    "electorate": "Lyons",
     "lat": -42.69655,
-    "lng": 146.88985,
-    "electorate": "Lyons"
+    "lng": 146.88985
+  },
+  "Glenorchy": {
+    "electorate": "Clark",
+    "lat": -42.830908,
+    "lng": 147.267619
+  },
+  "Glenorchy Central": {
+    "electorate": "Clark",
+    "lat": -42.824143,
+    "lng": 147.282025
+  },
+  "Goodwood": {
+    "electorate": "Clark",
+    "lat": -42.83189,
+    "lng": 147.29333
   },
   "Granton": {
+    "electorate": "Lyons",
     "lat": -42.74976,
-    "lng": 147.22395,
-    "electorate": "Lyons"
+    "lng": 147.22395
+  },
+  "Grassy": {
+    "electorate": "Braddon",
+    "lat": -40.04806384,
+    "lng": 144.0508167
+  },
+  "Gravelly Beach": {
+    "electorate": "Bass",
+    "lat": -41.28332,
+    "lng": 146.97134
   },
   "Hadspen": {
+    "electorate": "Lyons",
     "lat": -41.50623,
-    "lng": 147.06347,
-    "electorate": "Lyons"
+    "lng": 147.06347
   },
   "Hagley": {
+    "electorate": "Lyons",
     "lat": -41.5247212,
-    "lng": 146.9019556,
-    "electorate": "Lyons"
+    "lng": 146.9019556
+  },
+  "Havenview": {
+    "electorate": "Braddon",
+    "lat": -41.08346,
+    "lng": 145.91081
+  },
+  "Heybridge": {
+    "electorate": "Braddon",
+    "lat": -41.07515,
+    "lng": 145.98616
+  },
+  "Highclere": {
+    "electorate": "Braddon",
+    "lat": -41.19046,
+    "lng": 145.8061
+  },
+  "Hillwood": {
+    "electorate": "Bass",
+    "lat": -41.23623,
+    "lng": 146.97495
+  },
+  "Hobart City": {
+    "electorate": "Clark",
+    "lat": -42.88072266,
+    "lng": 147.3318282
+  },
+  "Howden": {
+    "electorate": "Franklin",
+    "lat": -43.02331,
+    "lng": 147.29143
+  },
+  "Howrah": {
+    "electorate": "Franklin",
+    "lat": -42.88177,
+    "lng": 147.40387
+  },
+  "Huonville": {
+    "electorate": "Franklin",
+    "lat": -43.023734,
+    "lng": 147.046989
+  },
+  "Inveresk": {
+    "electorate": "Bass",
+    "lat": -41.42136,
+    "lng": 147.1316
+  },
+  "Invermay": {
+    "electorate": "Bass",
+    "lat": -41.428417,
+    "lng": 147.138618
+  },
+  "Irishtown": {
+    "electorate": "Braddon",
+    "lat": -40.91220617,
+    "lng": 145.1442312
+  },
+  "Judbury": {
+    "electorate": "Franklin",
+    "lat": -42.9981,
+    "lng": 146.92811
+  },
+  "Karoola": {
+    "electorate": "Bass",
+    "lat": -41.25423,
+    "lng": 147.14806
+  },
+  "Kelso": {
+    "electorate": "Bass",
+    "lat": -41.10353,
+    "lng": 146.79368
   },
   "Kempton": {
+    "electorate": "Lyons",
     "lat": -42.53226,
-    "lng": 147.20088,
-    "electorate": "Lyons"
+    "lng": 147.20088
+  },
+  "Kettering": {
+    "electorate": "Franklin",
+    "lat": -43.12566,
+    "lng": 147.2467
+  },
+  "Kings Meadows": {
+    "electorate": "Bass",
+    "lat": -41.46782,
+    "lng": 147.15942
+  },
+  "Kingston": {
+    "electorate": "Franklin",
+    "lat": -42.9742845,
+    "lng": 147.307944
+  },
+  "Kingston Beach": {
+    "electorate": "Franklin",
+    "lat": -42.98102,
+    "lng": 147.32245
   },
   "Lachlan": {
+    "electorate": "Lyons",
     "lat": -42.83039,
-    "lng": 147.0426,
-    "electorate": "Lyons"
+    "lng": 147.0426
+  },
+  "Lady Barron": {
+    "electorate": "Bass",
+    "lat": -40.21062673,
+    "lng": 148.2393381
+  },
+  "Latrobe": {
+    "electorate": "Braddon",
+    "lat": -41.23912,
+    "lng": 146.41612
+  },
+  "Lauderdale": {
+    "electorate": "Franklin",
+    "lat": -42.90361386,
+    "lng": 147.4802177
+  },
+  "Launceston": {
+    "electorate": "Bass",
+    "lat": -41.43659,
+    "lng": 147.13718
+  },
+  "Launceston Central": {
+    "electorate": "Bass",
+    "lat": -41.440961,
+    "lng": 147.142126
+  },
+  "Lebrina": {
+    "electorate": "Bass",
+    "lat": -41.17742811,
+    "lng": 147.2274391
+  },
+  "Legana": {
+    "electorate": "Bass",
+    "lat": -41.36317,
+    "lng": 147.04658
+  },
+  "Lenah Valley": {
+    "electorate": "Clark",
+    "lat": -42.861704,
+    "lng": 147.291106
+  },
+  "Lilydale": {
+    "electorate": "Bass",
+    "lat": -41.2522994,
+    "lng": 147.2149593
+  },
+  "Lindisfarne": {
+    "electorate": "Franklin",
+    "lat": -42.85178,
+    "lng": 147.36341
+  },
+  "Lindisfarne Village": {
+    "electorate": "Franklin",
+    "lat": -42.847191,
+    "lng": 147.355152
   },
   "Longford": {
+    "electorate": "Lyons",
     "lat": -41.59592537,
-    "lng": 147.1168638,
-    "electorate": "Lyons"
+    "lng": 147.1168638
   },
   "Lower Barrington": {
+    "electorate": "Lyons",
     "lat": -41.29085,
-    "lng": 146.29118,
-    "electorate": "Lyons"
+    "lng": 146.29118
+  },
+  "Lower Sandy Bay": {
+    "electorate": "Clark",
+    "lat": -42.909612,
+    "lng": 147.349511
   },
   "Magra": {
+    "electorate": "Lyons",
     "lat": -42.755695,
-    "lng": 147.054078,
-    "electorate": "Lyons"
+    "lng": 147.054078
+  },
+  "Maranoa Heights": {
+    "electorate": "Franklin",
+    "lat": -42.99054,
+    "lng": 147.30882
+  },
+  "Margate": {
+    "electorate": "Franklin",
+    "lat": -43.02826429,
+    "lng": 147.2609717
+  },
+  "Marrawah": {
+    "electorate": "Braddon",
+    "lat": -40.92299,
+    "lng": 144.69693
   },
   "Meander": {
+    "electorate": "Lyons",
     "lat": -41.652762,
-    "lng": 146.609387,
-    "electorate": "Lyons"
+    "lng": 146.609387
+  },
+  "Melrose": {
+    "electorate": "Braddon",
+    "lat": -41.24115487,
+    "lng": 146.2884587
+  },
+  "Merton": {
+    "electorate": "Clark",
+    "lat": -42.84555,
+    "lng": 147.26505
+  },
+  "Middleton": {
+    "electorate": "Franklin",
+    "lat": -43.2313,
+    "lng": 147.25573
   },
   "Midway Point": {
+    "electorate": "Lyons",
     "lat": -42.79979,
-    "lng": 147.53265,
-    "electorate": "Lyons"
+    "lng": 147.53265
   },
   "Miena": {
+    "electorate": "Lyons",
     "lat": -41.9937,
-    "lng": 146.70828,
-    "electorate": "Lyons"
+    "lng": 146.70828
   },
   "Mole Creek": {
+    "electorate": "Lyons",
     "lat": -41.55767653,
-    "lng": 146.4066991,
-    "electorate": "Lyons"
+    "lng": 146.4066991
   },
   "Molesworth": {
+    "electorate": "Lyons",
     "lat": -42.8035064,
-    "lng": 147.156375,
-    "electorate": "Lyons"
+    "lng": 147.156375
+  },
+  "Montagu Bay": {
+    "electorate": "Franklin",
+    "lat": -42.86439,
+    "lng": 147.35336
+  },
+  "Montello": {
+    "electorate": "Braddon",
+    "lat": -41.05996,
+    "lng": 145.89764
+  },
+  "Moonah": {
+    "electorate": "Clark",
+    "lat": -42.84612742,
+    "lng": 147.2997299
+  },
+  "Moonah East": {
+    "electorate": "Clark",
+    "lat": -42.8472392,
+    "lng": 147.3072554
+  },
+  "Moonah North": {
+    "electorate": "Clark",
+    "lat": -42.83843,
+    "lng": 147.29633
+  },
+  "Moorleah": {
+    "electorate": "Braddon",
+    "lat": -40.98099,
+    "lng": 145.61629
+  },
+  "Mornington": {
+    "electorate": "Franklin",
+    "lat": -42.85588,
+    "lng": 147.40216
+  },
+  "Mount Nelson": {
+    "electorate": "Clark",
+    "lat": -42.91353,
+    "lng": 147.32305
+  },
+  "Mount Stuart": {
+    "electorate": "Clark",
+    "lat": -42.87507,
+    "lng": 147.29906
+  },
+  "Mountain River": {
+    "electorate": "Franklin",
+    "lat": -42.97612805,
+    "lng": 147.0938581
+  },
+  "Mowbray": {
+    "electorate": "Bass",
+    "lat": -41.402444,
+    "lng": 147.132667
+  },
+  "Natone": {
+    "electorate": "Braddon",
+    "lat": -41.17022,
+    "lng": 145.92209
   },
   "New Norfolk": {
+    "electorate": "Lyons",
     "lat": -42.779,
-    "lng": 147.06366,
-    "electorate": "Lyons"
+    "lng": 147.06366
   },
   "New Norfolk North": {
+    "electorate": "Lyons",
     "lat": -42.774295,
-    "lng": 147.050038,
-    "electorate": "Lyons"
+    "lng": 147.050038
+  },
+  "New Town": {
+    "electorate": "Clark",
+    "lat": -42.866018,
+    "lng": 147.31423
+  },
+  "New Town West": {
+    "electorate": "Clark",
+    "lat": -42.86136,
+    "lng": 147.30396
+  },
+  "Newnham": {
+    "electorate": "Bass",
+    "lat": -41.38729,
+    "lng": 147.12779
+  },
+  "Newstead": {
+    "electorate": "Bass",
+    "lat": -41.4470206,
+    "lng": 147.1572394
+  },
+  "North Hobart Central": {
+    "electorate": "Clark",
+    "lat": -42.87271,
+    "lng": 147.31425
+  },
+  "North Motton": {
+    "electorate": "Braddon",
+    "lat": -41.20705,
+    "lng": 146.10952
+  },
+  "Norwood": {
+    "electorate": "Bass",
+    "lat": -41.46282,
+    "lng": 147.17329
   },
   "Nubeena": {
+    "electorate": "Lyons",
     "lat": -43.09998,
-    "lng": 147.74416,
-    "electorate": "Lyons"
+    "lng": 147.74416
+  },
+  "Nunamara": {
+    "electorate": "Bass",
+    "lat": -41.3948,
+    "lng": 147.29453
   },
   "Oatlands": {
+    "electorate": "Lyons",
     "lat": -42.30141666,
-    "lng": 147.3703108,
-    "electorate": "Lyons"
+    "lng": 147.3703108
   },
   "Old Beach": {
+    "electorate": "Lyons",
     "lat": -42.77671914,
-    "lng": 147.2692982,
-    "electorate": "Lyons"
+    "lng": 147.2692982
   },
   "Orford": {
+    "electorate": "Lyons",
     "lat": -42.563525,
-    "lng": 147.873845,
-    "electorate": "Lyons"
+    "lng": 147.873845
   },
   "Ouse": {
+    "electorate": "Lyons",
     "lat": -42.48533294,
-    "lng": 146.7111299,
-    "electorate": "Lyons"
+    "lng": 146.7111299
+  },
+  "Penguin": {
+    "electorate": "Braddon",
+    "lat": -41.125897,
+    "lng": 146.068702
   },
   "Perth": {
+    "electorate": "Lyons",
     "lat": -41.57255,
-    "lng": 147.17365,
-    "electorate": "Lyons"
+    "lng": 147.17365
+  },
+  "Pipers River": {
+    "electorate": "Bass",
+    "lat": -41.10039,
+    "lng": 147.09152
   },
   "Pontville": {
+    "electorate": "Lyons",
     "lat": -42.68722595,
-    "lng": 147.2634687,
-    "electorate": "Lyons"
+    "lng": 147.2634687
+  },
+  "Port Sorell": {
+    "electorate": "Braddon",
+    "lat": -41.16525,
+    "lng": 146.5558
+  },
+  "Preston": {
+    "electorate": "Braddon",
+    "lat": -41.29604,
+    "lng": 146.06239
   },
   "Primrose Sands": {
+    "electorate": "Lyons",
     "lat": -42.89213,
-    "lng": 147.67292,
-    "electorate": "Lyons"
+    "lng": 147.67292
+  },
+  "Prospect": {
+    "electorate": "Bass",
+    "lat": -41.47301,
+    "lng": 147.12638
   },
   "Prospect Vale": {
+    "electorate": "Lyons",
     "lat": -41.47909,
-    "lng": 147.10972,
-    "electorate": "Lyons"
+    "lng": 147.10972
+  },
+  "Queenstown": {
+    "electorate": "Braddon",
+    "lat": -42.080415,
+    "lng": 145.557426
   },
   "Railton": {
+    "electorate": "Lyons",
     "lat": -41.3529486,
-    "lng": 146.4145571,
-    "electorate": "Lyons"
+    "lng": 146.4145571
+  },
+  "Ranelagh": {
+    "electorate": "Franklin",
+    "lat": -43.00901,
+    "lng": 147.03856
+  },
+  "Ravenswood": {
+    "electorate": "Bass",
+    "lat": -41.41627,
+    "lng": 147.17662
+  },
+  "Riana": {
+    "electorate": "Braddon",
+    "lat": -41.2015,
+    "lng": 145.99908
   },
   "Richmond": {
+    "electorate": "Lyons",
     "lat": -42.73937,
-    "lng": 147.43748,
-    "electorate": "Lyons"
+    "lng": 147.43748
+  },
+  "Ridgley": {
+    "electorate": "Braddon",
+    "lat": -41.13937,
+    "lng": 145.83787
+  },
+  "Ringarooma": {
+    "electorate": "Bass",
+    "lat": -41.24219,
+    "lng": 147.73579
+  },
+  "Risdon Vale": {
+    "electorate": "Franklin",
+    "lat": -42.81283,
+    "lng": 147.35367
+  },
+  "Riverside": {
+    "electorate": "Bass",
+    "lat": -41.40874,
+    "lng": 147.09891
+  },
+  "Riverside West": {
+    "electorate": "Bass",
+    "lat": -41.43059,
+    "lng": 147.10612
+  },
+  "Rocherlea": {
+    "electorate": "Bass",
+    "lat": -41.37763,
+    "lng": 147.12155
+  },
+  "Rocky Cape": {
+    "electorate": "Braddon",
+    "lat": -40.90489,
+    "lng": 145.48664
+  },
+  "Rokeby": {
+    "electorate": "Franklin",
+    "lat": -42.900608,
+    "lng": 147.439002
+  },
+  "Romaine": {
+    "electorate": "Braddon",
+    "lat": -41.07761,
+    "lng": 145.90144
+  },
+  "Rosebery": {
+    "electorate": "Braddon",
+    "lat": -41.78006,
+    "lng": 145.53919
+  },
+  "Roseneath": {
+    "electorate": "Clark",
+    "lat": -42.78521,
+    "lng": 147.24012
+  },
+  "Rosetta": {
+    "electorate": "Clark",
+    "lat": -42.822316,
+    "lng": 147.258831
   },
   "Ross": {
+    "electorate": "Lyons",
     "lat": -42.03136,
-    "lng": 147.49244,
-    "electorate": "Lyons"
+    "lng": 147.49244
+  },
+  "Sandfly": {
+    "electorate": "Franklin",
+    "lat": -42.98497,
+    "lng": 147.19567
+  },
+  "Sandford": {
+    "electorate": "Franklin",
+    "lat": -42.94002,
+    "lng": 147.49566
+  },
+  "Sandy Bay": {
+    "electorate": "Clark",
+    "lat": -42.89916,
+    "lng": 147.3266
+  },
+  "Sandy Bay Beach": {
+    "electorate": "Clark",
+    "lat": -42.91389,
+    "lng": 147.35476
+  },
+  "Sassafras": {
+    "electorate": "Braddon",
+    "lat": -41.28689,
+    "lng": 146.50295
   },
   "Scamander": {
+    "electorate": "Lyons",
     "lat": -41.45419039,
-    "lng": 148.2592652,
-    "electorate": "Lyons"
+    "lng": 148.2592652
+  },
+  "Scottsdale": {
+    "electorate": "Bass",
+    "lat": -41.15479201,
+    "lng": 147.5099324
+  },
+  "Seven Mile Beach": {
+    "electorate": "Franklin",
+    "lat": -42.85432,
+    "lng": 147.5113
   },
   "Sheffield": {
+    "electorate": "Lyons",
     "lat": -41.38166,
-    "lng": 146.3289,
-    "electorate": "Lyons"
+    "lng": 146.3289
   },
-  "Sorell": {
-    "lat": -42.7809503,
-    "lng": 147.5606303,
-    "electorate": "Lyons"
-  },
-  "St Helens": {
-    "lat": -41.32219509,
-    "lng": 148.2494296,
-    "electorate": "Lyons"
-  },
-  "St Marys": {
-    "lat": -41.57939,
-    "lng": 148.18508,
-    "electorate": "Lyons"
-  },
-  "Swansea": {
-    "lat": -42.12448289,
-    "lng": 148.0768285,
-    "electorate": "Lyons"
-  },
-  "Taranna": {
-    "lat": -43.03802462,
-    "lng": 147.866748,
-    "electorate": "Lyons"
-  },
-  "Tea Tree": {
-    "lat": -42.69026,
-    "lng": 147.31894,
-    "electorate": "Lyons"
-  },
-  "Triabunna": {
-    "lat": -42.508166,
-    "lng": 147.909631,
-    "electorate": "Lyons"
-  },
-  "Tunnack": {
-    "lat": -42.45592,
-    "lng": 147.46179,
-    "electorate": "Lyons"
-  },
-  "Westbury": {
-    "lat": -41.528113,
-    "lng": 146.831023,
-    "electorate": "Lyons"
-  },
-  "Westerway": {
-    "lat": -42.67788,
-    "lng": 146.78779,
-    "electorate": "Lyons"
-  },
-  "Wilmot": {
-    "lat": -41.38628593,
-    "lng": 146.1746664,
-    "electorate": "Lyons"
+  "Shorewell Park": {
+    "electorate": "Braddon",
+    "lat": -41.06122,
+    "lng": 145.88163
   },
   "Sidmouth": {
+    "electorate": "Bass",
     "lat": -41.22195,
-    "lng": 146.88767,
-    "electorate": "Bass"}}}
+    "lng": 146.88767
+  },
+  "Sisters Beach": {
+    "electorate": "Braddon",
+    "lat": -40.91818,
+    "lng": 145.56498
+  },
+  "Sisters Creek": {
+    "electorate": "Braddon",
+    "lat": -40.964713,
+    "lng": 145.573222
+  },
+  "Smithton": {
+    "electorate": "Braddon",
+    "lat": -40.84838841,
+    "lng": 145.1161808
+  },
+  "Snug": {
+    "electorate": "Franklin",
+    "lat": -43.06542,
+    "lng": 147.25411
+  },
+  "Somerset": {
+    "electorate": "Braddon",
+    "lat": -41.03815,
+    "lng": 145.82063
+  },
+  "Sorell": {
+    "electorate": "Lyons",
+    "lat": -42.7809503,
+    "lng": 147.5606303
+  },
+  "South Arm": {
+    "electorate": "Franklin",
+    "lat": -43.02613,
+    "lng": 147.42013
+  },
+  "South Hobart": {
+    "electorate": "Clark",
+    "lat": -42.89497,
+    "lng": 147.31223
+  },
+  "South Launceston": {
+    "electorate": "Bass",
+    "lat": -41.45564437,
+    "lng": 147.1412667
+  },
+  "South Riana": {
+    "electorate": "Braddon",
+    "lat": -41.23446,
+    "lng": 145.97709
+  },
+  "Southport": {
+    "electorate": "Franklin",
+    "lat": -43.415763,
+    "lng": 146.961547
+  },
+  "Sprent": {
+    "electorate": "Braddon",
+    "lat": -41.26221,
+    "lng": 146.15948
+  },
+  "Spreyton": {
+    "electorate": "Braddon",
+    "lat": -41.21202,
+    "lng": 146.34454
+  },
+  "St Helens": {
+    "electorate": "Lyons",
+    "lat": -41.32219509,
+    "lng": 148.2494296
+  },
+  "St Leonards": {
+    "electorate": "Bass",
+    "lat": -41.4597,
+    "lng": 147.20031
+  },
+  "St Marys": {
+    "electorate": "Lyons",
+    "lat": -41.57939,
+    "lng": 148.18508
+  },
+  "Stanley": {
+    "electorate": "Braddon",
+    "lat": -40.7595,
+    "lng": 145.29099
+  },
+  "Stowport": {
+    "electorate": "Braddon",
+    "lat": -41.11224,
+    "lng": 145.92863
+  },
+  "Strahan": {
+    "electorate": "Braddon",
+    "lat": -42.153392,
+    "lng": 145.320432
+  },
+  "Sulphur Creek": {
+    "electorate": "Braddon",
+    "lat": -41.09328,
+    "lng": 146.02373
+  },
+  "Summerhill": {
+    "electorate": "Bass",
+    "lat": -41.46768,
+    "lng": 147.13
+  },
+  "Swansea": {
+    "electorate": "Lyons",
+    "lat": -42.12448289,
+    "lng": 148.0768285
+  },
+  "Taranna": {
+    "electorate": "Lyons",
+    "lat": -43.03802462,
+    "lng": 147.866748
+  },
+  "Taroona": {
+    "electorate": "Clark",
+    "lat": -42.94317,
+    "lng": 147.3531
+  },
+  "Tea Tree": {
+    "electorate": "Lyons",
+    "lat": -42.69026,
+    "lng": 147.31894
+  },
+  "Tranmere": {
+    "electorate": "Franklin",
+    "lat": -42.891,
+    "lng": 147.40872
+  },
+  "Trevallyn": {
+    "electorate": "Bass",
+    "lat": -41.43784,
+    "lng": 147.11397
+  },
+  "Triabunna": {
+    "electorate": "Lyons",
+    "lat": -42.508166,
+    "lng": 147.909631
+  },
+  "Tullah": {
+    "electorate": "Braddon",
+    "lat": -41.737851,
+    "lng": 145.616967
+  },
+  "Tunnack": {
+    "electorate": "Lyons",
+    "lat": -42.45592,
+    "lng": 147.46179
+  },
+  "Turners Beach": {
+    "electorate": "Braddon",
+    "lat": -41.15871,
+    "lng": 146.2447
+  },
+  "Ulverstone Central": {
+    "electorate": "Braddon",
+    "lat": -41.155037,
+    "lng": 146.171973
+  },
+  "Ulverstone East": {
+    "electorate": "Braddon",
+    "lat": -41.15494,
+    "lng": 146.19089
+  },
+  "Ulverstone South": {
+    "electorate": "Braddon",
+    "lat": -41.16199,
+    "lng": 146.17143
+  },
+  "Waimea Heights": {
+    "electorate": "Clark",
+    "lat": -42.90873,
+    "lng": 147.33711
+  },
+  "Waratah": {
+    "electorate": "Braddon",
+    "lat": -41.44462,
+    "lng": 145.53128
+  },
+  "Warrane": {
+    "electorate": "Franklin",
+    "lat": -42.85189241,
+    "lng": 147.3845626
+  },
+  "Waverley": {
+    "electorate": "Bass",
+    "lat": -41.43332,
+    "lng": 147.19002
+  },
+  "Wesley Vale": {
+    "electorate": "Braddon",
+    "lat": -41.1887792,
+    "lng": 146.4562247
+  },
+  "West Hobart": {
+    "electorate": "Clark",
+    "lat": -42.88159,
+    "lng": 147.32031
+  },
+  "West Hobart Central": {
+    "electorate": "Clark",
+    "lat": -42.88187,
+    "lng": 147.30889
+  },
+  "West Hobart South": {
+    "electorate": "Clark",
+    "lat": -42.88763,
+    "lng": 147.31741
+  },
+  "West Launceston": {
+    "electorate": "Bass",
+    "lat": -41.44964,
+    "lng": 147.1285
+  },
+  "West Ulverstone": {
+    "electorate": "Braddon",
+    "lat": -41.14851,
+    "lng": 146.15899
+  },
+  "Westbury": {
+    "electorate": "Lyons",
+    "lat": -41.528113,
+    "lng": 146.831023
+  },
+  "Westerway": {
+    "electorate": "Lyons",
+    "lat": -42.67788,
+    "lng": 146.78779
+  },
+  "Weymouth": {
+    "electorate": "Bass",
+    "lat": -41.01518,
+    "lng": 147.15443
+  },
+  "Whitemark": {
+    "electorate": "Bass",
+    "lat": -40.1220889,
+    "lng": 148.0169627
+  },
+  "Wilmot": {
+    "electorate": "Lyons",
+    "lat": -41.38628593,
+    "lng": 146.1746664
+  },
+  "Windermere": {
+    "electorate": "Clark",
+    "lat": -42.79934,
+    "lng": 147.25846
+  },
+  "Winnaleah": {
+    "electorate": "Bass",
+    "lat": -41.09807,
+    "lng": 147.82404
+  },
+  "Wivenhoe": {
+    "electorate": "Braddon",
+    "lat": -41.0695,
+    "lng": 145.93556
+  },
+  "Woodbridge": {
+    "electorate": "Franklin",
+    "lat": -43.15999,
+    "lng": 147.23914
+  },
+  "Wynyard Central": {
+    "electorate": "Braddon",
+    "lat": -40.99088,
+    "lng": 145.72865
+  },
+  "Wynyard West": {
+    "electorate": "Braddon",
+    "lat": -40.98684,
+    "lng": 145.71684
+  },
+  "Yolla": {
+    "electorate": "Braddon",
+    "lat": -41.12363,
+    "lng": 145.71977
+  },
+  "Youngtown": {
+    "electorate": "Bass",
+    "lat": -41.48235,
+    "lng": 147.16386
+  },
+  "Zeehan": {
+    "electorate": "Braddon",
+    "lat": -41.88794,
+    "lng": 145.33998
+  }
+}
