@@ -1,4 +1,5 @@
-POLLING_PLACES = {
+{"POLLING_PLACES": 
+{
   "Beaconsfield": {
     "lat": -41.202855,
     "lng": 146.81868,
@@ -1282,5 +1283,4 @@ POLLING_PLACES = {
   "Sidmouth": {
     "lat": -41.22195,
     "lng": 146.88767,
-    "electorate": "Bass"
-  }
+    "electorate": "Bass"}]},
