@@ -2157,6 +2157,7 @@ function renderHistoricalView(container) {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(boothMap);
 
+            // Use a simple layer group so all booth pins remain individual
             mapMarkers = L.layerGroup().addTo(boothMap);
 
             Object.entries(POLLING_PLACES).forEach(([name, info]) => {
