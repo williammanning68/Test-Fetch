@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasmania Election Results Dashboard</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <style>
         :root {
             --federal-gold: #C5A572;
@@ -403,7 +401,6 @@
 </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </head>
 <body>
     <div class="header">
@@ -579,7 +576,44 @@
                 }
                 
                 // Initialize the dashboard with fetched data
+                const savedType = localStorage.getItem('electionType');
+                if (savedType === 'state' || savedType === 'lc') {
+                    currentElectionType = savedType;
+                    document.getElementById('btnState').classList.toggle('active', savedType === 'state');
+                    document.getElementById('btnLC').classList.toggle('active', savedType === 'lc');
+                }
                 updateYearDropdown();
+
+                const savedScope = localStorage.getItem('scope');
+                if (savedScope) document.getElementById('scopeSelect').value = savedScope;
+
+                const yearSelect = document.getElementById('yearSelect');
+                const savedYear = localStorage.getItem('year');
+                if (savedYear && Array.from(yearSelect.options).some(o => o.value === savedYear)) {
+                    yearSelect.value = savedYear;
+                }
+
+                updateElectorateDropdown();
+                const electorateSelect = document.getElementById('electorateSelect');
+                const savedElect = localStorage.getItem('electorate');
+                if (savedElect && Array.from(electorateSelect.options).some(o => o.value === savedElect)) {
+                    electorateSelect.value = savedElect;
+                }
+
+                updateBoothDropdown();
+                const boothSelect = document.getElementById('boothSelect');
+                const savedBooth = localStorage.getItem('booth');
+                if (savedBooth && Array.from(boothSelect.options).some(o => o.value === savedBooth)) {
+                    boothSelect.value = savedBooth;
+                }
+
+                updateCandidateDropdown();
+                const candidateSelect = document.getElementById('candidateSelect');
+                const savedCand = localStorage.getItem('candidate');
+                if (savedCand && Array.from(candidateSelect.options).some(o => o.value === savedCand)) {
+                    candidateSelect.value = savedCand;
+                }
+
                 updateDashboard();
                 
                 // Hide loading message
@@ -921,6 +955,14 @@ function getPartyColor(party) {
             const electorate = document.getElementById('electorateSelect').value;
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
+
+            // Persist current selections
+            localStorage.setItem('electionType', currentElectionType);
+            localStorage.setItem('scope', scope);
+            localStorage.setItem('year', year);
+            localStorage.setItem('electorate', electorate);
+            localStorage.setItem('booth', booth);
+            localStorage.setItem('candidate', candidate);
             
             // Clear existing charts and map
             Object.values(charts).forEach(chart => {
@@ -1023,13 +1065,14 @@ function getPartyColor(party) {
         
         function updateBoothDropdown() {
             const boothSelect = document.getElementById('boothSelect');
+            const currentValue = boothSelect.value;
             const year = document.getElementById('yearSelect').value;
             const electorate = document.getElementById('electorateSelect').value;
-            
+
             boothSelect.innerHTML = '<option value="">All Booths</option>';
-            
+
             const data = getCurrentData(year, 'booth', electorate, '', '');
-            
+
             const booths = new Set();
             data.forEach(d => {
                 if (d.b && Array.isArray(d.b)) {
@@ -1040,10 +1083,15 @@ function getPartyColor(party) {
                     });
                 }
             });
-            
-            [...booths].sort().forEach(booth => {
+
+            const sorted = [...booths].sort();
+            sorted.forEach(booth => {
                 boothSelect.innerHTML += `<option value="${booth}">${booth}</option>`;
             });
+
+            if (currentValue && sorted.includes(currentValue)) {
+                boothSelect.value = currentValue;
+            }
         }
         
         function updateCandidateDropdown() {
@@ -1277,9 +1325,7 @@ function getPartyColor(party) {
                             <div class="chart-container">
                                 <canvas id="voteChart"></canvas>
                             </div>
-                        </div>
-                        <div>
-                            <h3>Detailed Results</h3>
+                            <h3 style="margin-top:1.5rem;">Detailed Results</h3>
                             <div class="table-container">
                                 <table>
                                     <thead>
@@ -1287,18 +1333,24 @@ function getPartyColor(party) {
                                             <th>Candidate</th>
                                             <th>Party</th>
                                             <th>Votes</th>
-                                            <th>Percentage</th>
+                                            <th>Booth %</th>
+                                            <th>Cand %</th>
                                         </tr>
                                     </thead>
                                     <tbody id="boothResultsBody"></tbody>
                                 </table>
                             </div>
                         </div>
+                        <div>
+                            <h3>Booth Map</h3>
+                            <div id="boothMap"></div>
+                        </div>
                     </div>
                 </div>
             `;
-            
+
             loadBoothData(year, electorate, booth);
+            createBoothSelectionMap(electorate, booth);
         }
         
         function renderCandidateView(container, year, candidate) {
@@ -1777,18 +1829,24 @@ function renderHistoricalView(container) {
         
         function loadBoothData(year, electorate, booth) {
             const data = getCurrentData(year, 'booth', electorate, booth, '');
-            
-            
+            const candidateTotals = {};
+
+            // Pre-compute total votes per candidate across the current scope
+            data.forEach(candidate => {
+                let total = 0;
+                if (candidate.b && Array.isArray(candidate.b)) {
+                    candidate.b.forEach(b => {
+                        if (isPhysicalBooth(b.n)) total += b.v;
+                    });
+                }
+                candidateTotals[candidate.c] = total;
+            });
+
             if (!booth || booth === '') {
                 // Aggregate across all (physical) booths within the selected electorate (or statewide if none)
                 const boothResults = [];
                 data.forEach(candidate => {
-                    let total = 0;
-                    if (candidate.b && Array.isArray(candidate.b)) {
-                        candidate.b.forEach(b => {
-                            if (isPhysicalBooth(b.n)) total += b.v;
-                        });
-                    }
+                    const total = candidateTotals[candidate.c] || 0;
                     boothResults.push({
                         candidate: candidate.c,
                         party: candidate.p,
@@ -1811,6 +1869,7 @@ function renderHistoricalView(container) {
                                 <td style="color: ${getPartyColor(result.party)}">${getPartyName(result.party)}</td>
                                 <td>${result.votes.toLocaleString()}</td>
                                 <td>${totalVotes ? ((result.votes / totalVotes) * 100).toFixed(1) : '0.0'}%</td>
+                                <td>${candidateTotals[result.candidate] ? ((result.votes / candidateTotals[result.candidate]) * 100).toFixed(1) : '0.0'}%</td>
                             `;
                         });
                 }
@@ -1870,6 +1929,7 @@ function renderHistoricalView(container) {
                         <td style="color: ${getPartyColor(result.party)}">${getPartyName(result.party)}</td>
                         <td>${result.votes.toLocaleString()}</td>
                         <td>${((result.votes / totalVotes) * 100).toFixed(1)}%</td>
+                        <td>${candidateTotals[result.candidate] ? ((result.votes / candidateTotals[result.candidate]) * 100).toFixed(1) : '0.0'}%</td>
                     `;
                 });
             }
@@ -1934,19 +1994,20 @@ function renderHistoricalView(container) {
             const ctx = document.getElementById('partyChart');
             if (!ctx) return;
             
+            const totalVotes = Object.values(partyVotes).reduce((a, b) => a + b, 0);
             const sortedParties = Object.entries(partyVotes)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
-            
+
             if (charts.party) charts.party.destroy();
-            
+
             charts.party = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: sortedParties.map(p => getPartyName(p[0])),
                     datasets: [{
-                        label: 'Votes',
-                        data: sortedParties.map(p => p[1]),
+                        label: 'Vote %',
+                        data: sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0),
                         backgroundColor: sortedParties.map(p => getPartyColor(p[0]))
                     }]
                 },
@@ -1955,6 +2016,15 @@ function renderHistoricalView(container) {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
                     }
                 }
             });
@@ -2077,75 +2147,56 @@ function renderHistoricalView(container) {
             });
         }
         
+        function createBoothSelectionMap(electorate, selectedBooth = '') {
+            if (boothMap) {
+                boothMap.remove();
+            }
+            boothMap = L.map('boothMap').setView([-42.0, 147.0], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(boothMap);
+
+            mapMarkers = L.featureGroup().addTo(boothMap);
+
+            Object.entries(POLLING_PLACES).forEach(([name, info]) => {
+                if (electorate && info.electorate !== electorate) return;
+
+                const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
+                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${info.electorate}</p></div>`);
+                marker.on('click', () => {
+                    const boothSelect = document.getElementById('boothSelect');
+                    const options = Array.from(boothSelect.options);
+                    const match = options.find(opt => keyForBooth(opt.value) === keyForBooth(name));
+                    if (match) {
+                        boothSelect.value = match.value;
+                        updateDashboard();
+                    }
+                });
+
+                if (selectedBooth && keyForBooth(selectedBooth) === keyForBooth(name)) {
+                    marker.openPopup();
+                    boothMap.setView([info.lat, info.lng], 12);
+                }
+            });
+
+            if (mapMarkers.getLayers().length > 0) {
+                boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
+            }
+        }
+
         // Map functions
         function createBoothWinnersMap(boothWinners) {
             if (!boothMap) {
                 boothMap = L.map('boothMap').setView([-42.0, 147.0], 7);
-                
+
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(boothMap);
-                
-                mapMarkers = L.markerClusterGroup({
-                    chunkedLoading: true,
-                    spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true
-                });
-                
-                
-                // --- Dynamic clustering behaviour ---
-                function _partyFilterSelected() {
-                    const dd = document.getElementById('partyFilterDropdown');
-                    if (!dd) return [];
-                    return Array.from(dd.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
-                }
-                function _clusterColorForSelected() {
-                    const sel = _partyFilterSelected();
-                    if (sel.length === 1) {
-                        try { return getPartyColor(sel[0]); } catch(e) { return '#B8B8B8'; }
-                    }
-                    return '#B8B8B8';
-                }
-                if (typeof mapMarkers !== 'undefined' && mapMarkers) {
-                    mapMarkers.options.iconCreateFunction = function(cluster) {
-                        const count = cluster.getChildCount();
-                        const color = _clusterColorForSelected();
-                        const html = `<div style="
-                            background:${color};
-                            color:#000;
-                            width:36px;height:36px;
-                            line-height:36px;
-                            border-radius:50%;
-                            text-align:center;
-                            font-weight:700;
-                            box-shadow:0 0 0 2px #fff inset;
-                        ">${count}</div>`;
-                        return L.divIcon({ html, className: 'party-cluster', iconSize: [36,36] });
-                    };
-                    // Only cluster when exactly one party is selected
-                    mapMarkers.options.maxClusterRadius = function(zoom) {
-                        return _partyFilterSelected().length === 1 ? 80 : 0;
-                    };
-                    // Recompute when filter changes
-                    (function wireClusterRefresh(){
-                        const dd = document.getElementById('partyFilterDropdown');
-                        if (!dd) return;
-                        dd.querySelectorAll('input[type=checkbox]').forEach(cb => {
-                            cb.addEventListener('change', function(){
-                                if (mapMarkers && mapMarkers.refreshClusters) {
-                                    mapMarkers.refreshClusters();
-                                } else if (mapMarkers) {
-                                    const m = window.boothMap || window.map;
-                                    if (m) { m.removeLayer(mapMarkers); m.addLayer(mapMarkers); }
-                                }
-                            });
-                        });
-                    })();
-                }
-boothMap.addLayer(mapMarkers);
-                
-                
+
+                // Display individual booth markers without clustering
+                mapMarkers = L.featureGroup().addTo(boothMap);
+
                 // --- GeoJSON Overlay selector (State, LegCo, LGA) [attached directly to boothMap] ---
                 (function setupGeoJsonOverlayToggleLocal(map) {
                     if (!map || map.__overlayCtlAdded) return;
