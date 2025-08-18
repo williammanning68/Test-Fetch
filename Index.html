@@ -2162,11 +2162,27 @@ function renderHistoricalView(container) {
 
             mapMarkers = L.layerGroup().addTo(boothMap);
 
+            // For LC elections, build a set of booth names that belong to the selected electorate
+            let lcBoothSet = null;
+            if (currentElectionType === 'lc' && electorate) {
+                const year = document.getElementById('yearSelect').value;
+                const data = getCurrentData(year, 'electorate', electorate, '', '');
+                lcBoothSet = new Set();
+                data.forEach(candidate => {
+                    if (Array.isArray(candidate.b)) {
+                        candidate.b.forEach(b => lcBoothSet.add(keyForBooth(b.n)));
+                    }
+                });
+            }
+
             Object.entries(POLLING_PLACES).forEach(([name, info]) => {
-                if (electorate && info.electorate !== electorate) return;
+                if (electorate) {
+                    if (currentElectionType === 'state' && info.electorate !== electorate) return;
+                    if (currentElectionType === 'lc' && lcBoothSet && !lcBoothSet.has(keyForBooth(name))) return;
+                }
 
                 const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
-                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${info.electorate}</p></div>`);
+                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${electorate || info.electorate}</p></div>`);
                 marker.on('click', () => {
                     const boothSelect = document.getElementById('boothSelect');
                     const options = Array.from(boothSelect.options);
