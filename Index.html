@@ -578,45 +578,11 @@
                     console.log('Alternative data structure detected and loaded');
                 }
                 
-                // Initialize the dashboard with fetched data
-                const savedType = localStorage.getItem('electionType');
-                if (savedType === 'state' || savedType === 'lc') {
-                    currentElectionType = savedType;
-                    document.getElementById('btnState').classList.toggle('active', savedType === 'state');
-                    document.getElementById('btnLC').classList.toggle('active', savedType === 'lc');
-                }
+                // Initialize the dashboard with default selections
                 updateYearDropdown();
-
-                const savedScope = localStorage.getItem('scope');
-                if (savedScope) document.getElementById('scopeSelect').value = savedScope;
-
-                const yearSelect = document.getElementById('yearSelect');
-                const savedYear = localStorage.getItem('year');
-                if (savedYear && Array.from(yearSelect.options).some(o => o.value === savedYear)) {
-                    yearSelect.value = savedYear;
-                }
-
                 updateElectorateDropdown();
-                const electorateSelect = document.getElementById('electorateSelect');
-                const savedElect = localStorage.getItem('electorate');
-                if (savedElect && Array.from(electorateSelect.options).some(o => o.value === savedElect)) {
-                    electorateSelect.value = savedElect;
-                }
-
                 updateBoothDropdown();
-                const boothSelect = document.getElementById('boothSelect');
-                const savedBooth = localStorage.getItem('booth');
-                if (savedBooth && Array.from(boothSelect.options).some(o => o.value === savedBooth)) {
-                    boothSelect.value = savedBooth;
-                }
-
                 updateCandidateDropdown();
-                const candidateSelect = document.getElementById('candidateSelect');
-                const savedCand = localStorage.getItem('candidate');
-                if (savedCand && Array.from(candidateSelect.options).some(o => o.value === savedCand)) {
-                    candidateSelect.value = savedCand;
-                }
-
                 updateDashboard();
                 
                 // Hide loading message
@@ -959,14 +925,6 @@ function getPartyColor(party) {
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
 
-            // Persist current selections
-            localStorage.setItem('electionType', currentElectionType);
-            localStorage.setItem('scope', scope);
-            localStorage.setItem('year', year);
-            localStorage.setItem('electorate', electorate);
-            localStorage.setItem('booth', booth);
-            localStorage.setItem('candidate', candidate);
-            
             // Clear existing charts and map
             Object.values(charts).forEach(chart => {
                 if (chart) chart.destroy();
@@ -2162,11 +2120,27 @@ function renderHistoricalView(container) {
 
             mapMarkers = L.layerGroup().addTo(boothMap);
 
+            // For LC elections, build a set of booth names that belong to the selected electorate
+            let lcBoothSet = null;
+            if (currentElectionType === 'lc' && electorate) {
+                const year = document.getElementById('yearSelect').value;
+                const data = getCurrentData(year, 'electorate', electorate, '', '');
+                lcBoothSet = new Set();
+                data.forEach(candidate => {
+                    if (Array.isArray(candidate.b)) {
+                        candidate.b.forEach(b => lcBoothSet.add(keyForBooth(b.n)));
+                    }
+                });
+            }
+
             Object.entries(POLLING_PLACES).forEach(([name, info]) => {
-                if (electorate && info.electorate !== electorate) return;
+                if (electorate) {
+                    if (currentElectionType === 'state' && info.electorate !== electorate) return;
+                    if (currentElectionType === 'lc' && lcBoothSet && !lcBoothSet.has(keyForBooth(name))) return;
+                }
 
                 const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
-                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${info.electorate}</p></div>`);
+                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${electorate || info.electorate}</p></div>`);
                 marker.on('click', () => {
                     const boothSelect = document.getElementById('boothSelect');
                     const options = Array.from(boothSelect.options);
