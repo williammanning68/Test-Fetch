@@ -1277,9 +1277,7 @@ function getPartyColor(party) {
                             <div class="chart-container">
                                 <canvas id="voteChart"></canvas>
                             </div>
-                        </div>
-                        <div>
-                            <h3>Detailed Results</h3>
+                            <h3 style="margin-top:1.5rem;">Detailed Results</h3>
                             <div class="table-container">
                                 <table>
                                     <thead>
@@ -1294,11 +1292,16 @@ function getPartyColor(party) {
                                 </table>
                             </div>
                         </div>
+                        <div>
+                            <h3>Booth Map</h3>
+                            <div id="boothMap"></div>
+                        </div>
                     </div>
                 </div>
             `;
-            
+
             loadBoothData(year, electorate, booth);
+            createBoothSelectionMap(electorate, booth);
         }
         
         function renderCandidateView(container, year, candidate) {
@@ -2077,6 +2080,44 @@ function renderHistoricalView(container) {
             });
         }
         
+        function createBoothSelectionMap(electorate, selectedBooth = '') {
+            if (boothMap) {
+                boothMap.remove();
+            }
+            boothMap = L.map('boothMap').setView([-42.0, 147.0], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(boothMap);
+
+            mapMarkers = L.layerGroup().addTo(boothMap);
+
+            Object.entries(POLLING_PLACES).forEach(([name, info]) => {
+                if (electorate && info.electorate !== electorate) return;
+
+                const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
+                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${info.electorate}</p></div>`);
+                marker.on('click', () => {
+                    const boothSelect = document.getElementById('boothSelect');
+                    const options = Array.from(boothSelect.options);
+                    const match = options.find(opt => keyForBooth(opt.value) === keyForBooth(name));
+                    if (match) {
+                        boothSelect.value = match.value;
+                        updateDashboard();
+                    }
+                });
+
+                if (selectedBooth && keyForBooth(selectedBooth) === keyForBooth(name)) {
+                    marker.openPopup();
+                    boothMap.setView([info.lat, info.lng], 12);
+                }
+            });
+
+            if (mapMarkers.getLayers().length > 0) {
+                boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
+            }
+        }
+
         // Map functions
         function createBoothWinnersMap(boothWinners) {
             if (!boothMap) {
