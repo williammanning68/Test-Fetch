@@ -2157,7 +2157,7 @@ function renderHistoricalView(container) {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(boothMap);
 
-            mapMarkers = L.featureGroup().addTo(boothMap);
+            mapMarkers = L.layerGroup().addTo(boothMap);
 
             Object.entries(POLLING_PLACES).forEach(([name, info]) => {
                 if (electorate && info.electorate !== electorate) return;
@@ -2181,7 +2181,8 @@ function renderHistoricalView(container) {
             });
 
             if (mapMarkers.getLayers().length > 0) {
-                boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
+                const bounds = L.featureGroup(mapMarkers.getLayers()).getBounds();
+                boothMap.fitBounds(bounds, { padding: [50, 50] });
             }
         }
 
@@ -2195,7 +2196,7 @@ function renderHistoricalView(container) {
                 }).addTo(boothMap);
 
                 // Display individual booth markers without clustering
-                mapMarkers = L.featureGroup().addTo(boothMap);
+                mapMarkers = L.layerGroup().addTo(boothMap);
 
                 // --- GeoJSON Overlay selector (State, LegCo, LGA) [attached directly to boothMap] ---
                 (function setupGeoJsonOverlayToggleLocal(map) {
@@ -2322,7 +2323,8 @@ const legend = L.control({position: 'bottomright'});
             
             if (boothWinners.length > 0) {
                 setTimeout(() => {
-                    boothMap.fitBounds(mapMarkers.getBounds(), {padding: [50, 50]});
+                    const bounds = L.featureGroup(mapMarkers.getLayers()).getBounds();
+                    boothMap.fitBounds(bounds, {padding: [50, 50]});
                 }, 100);
             }
         }
