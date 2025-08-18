@@ -579,7 +579,44 @@
                 }
                 
                 // Initialize the dashboard with fetched data
+                const savedType = localStorage.getItem('electionType');
+                if (savedType === 'state' || savedType === 'lc') {
+                    currentElectionType = savedType;
+                    document.getElementById('btnState').classList.toggle('active', savedType === 'state');
+                    document.getElementById('btnLC').classList.toggle('active', savedType === 'lc');
+                }
                 updateYearDropdown();
+
+                const savedScope = localStorage.getItem('scope');
+                if (savedScope) document.getElementById('scopeSelect').value = savedScope;
+
+                const yearSelect = document.getElementById('yearSelect');
+                const savedYear = localStorage.getItem('year');
+                if (savedYear && Array.from(yearSelect.options).some(o => o.value === savedYear)) {
+                    yearSelect.value = savedYear;
+                }
+
+                updateElectorateDropdown();
+                const electorateSelect = document.getElementById('electorateSelect');
+                const savedElect = localStorage.getItem('electorate');
+                if (savedElect && Array.from(electorateSelect.options).some(o => o.value === savedElect)) {
+                    electorateSelect.value = savedElect;
+                }
+
+                updateBoothDropdown();
+                const boothSelect = document.getElementById('boothSelect');
+                const savedBooth = localStorage.getItem('booth');
+                if (savedBooth && Array.from(boothSelect.options).some(o => o.value === savedBooth)) {
+                    boothSelect.value = savedBooth;
+                }
+
+                updateCandidateDropdown();
+                const candidateSelect = document.getElementById('candidateSelect');
+                const savedCand = localStorage.getItem('candidate');
+                if (savedCand && Array.from(candidateSelect.options).some(o => o.value === savedCand)) {
+                    candidateSelect.value = savedCand;
+                }
+
                 updateDashboard();
                 
                 // Hide loading message
@@ -921,6 +958,14 @@ function getPartyColor(party) {
             const electorate = document.getElementById('electorateSelect').value;
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
+
+            // Persist current selections
+            localStorage.setItem('electionType', currentElectionType);
+            localStorage.setItem('scope', scope);
+            localStorage.setItem('year', year);
+            localStorage.setItem('electorate', electorate);
+            localStorage.setItem('booth', booth);
+            localStorage.setItem('candidate', candidate);
             
             // Clear existing charts and map
             Object.values(charts).forEach(chart => {
@@ -1023,13 +1068,14 @@ function getPartyColor(party) {
         
         function updateBoothDropdown() {
             const boothSelect = document.getElementById('boothSelect');
+            const currentValue = boothSelect.value;
             const year = document.getElementById('yearSelect').value;
             const electorate = document.getElementById('electorateSelect').value;
-            
+
             boothSelect.innerHTML = '<option value="">All Booths</option>';
-            
+
             const data = getCurrentData(year, 'booth', electorate, '', '');
-            
+
             const booths = new Set();
             data.forEach(d => {
                 if (d.b && Array.isArray(d.b)) {
@@ -1040,10 +1086,15 @@ function getPartyColor(party) {
                     });
                 }
             });
-            
-            [...booths].sort().forEach(booth => {
+
+            const sorted = [...booths].sort();
+            sorted.forEach(booth => {
                 boothSelect.innerHTML += `<option value="${booth}">${booth}</option>`;
             });
+
+            if (currentValue && sorted.includes(currentValue)) {
+                boothSelect.value = currentValue;
+            }
         }
         
         function updateCandidateDropdown() {
@@ -1285,7 +1336,8 @@ function getPartyColor(party) {
                                             <th>Candidate</th>
                                             <th>Party</th>
                                             <th>Votes</th>
-                                            <th>Percentage</th>
+                                            <th>Booth %</th>
+                                            <th>Cand %</th>
                                         </tr>
                                     </thead>
                                     <tbody id="boothResultsBody"></tbody>
@@ -1780,18 +1832,24 @@ function renderHistoricalView(container) {
         
         function loadBoothData(year, electorate, booth) {
             const data = getCurrentData(year, 'booth', electorate, booth, '');
-            
-            
+            const candidateTotals = {};
+
+            // Pre-compute total votes per candidate across the current scope
+            data.forEach(candidate => {
+                let total = 0;
+                if (candidate.b && Array.isArray(candidate.b)) {
+                    candidate.b.forEach(b => {
+                        if (isPhysicalBooth(b.n)) total += b.v;
+                    });
+                }
+                candidateTotals[candidate.c] = total;
+            });
+
             if (!booth || booth === '') {
                 // Aggregate across all (physical) booths within the selected electorate (or statewide if none)
                 const boothResults = [];
                 data.forEach(candidate => {
-                    let total = 0;
-                    if (candidate.b && Array.isArray(candidate.b)) {
-                        candidate.b.forEach(b => {
-                            if (isPhysicalBooth(b.n)) total += b.v;
-                        });
-                    }
+                    const total = candidateTotals[candidate.c] || 0;
                     boothResults.push({
                         candidate: candidate.c,
                         party: candidate.p,
@@ -1814,6 +1872,7 @@ function renderHistoricalView(container) {
                                 <td style="color: ${getPartyColor(result.party)}">${getPartyName(result.party)}</td>
                                 <td>${result.votes.toLocaleString()}</td>
                                 <td>${totalVotes ? ((result.votes / totalVotes) * 100).toFixed(1) : '0.0'}%</td>
+                                <td>${candidateTotals[result.candidate] ? ((result.votes / candidateTotals[result.candidate]) * 100).toFixed(1) : '0.0'}%</td>
                             `;
                         });
                 }
@@ -1873,6 +1932,7 @@ function renderHistoricalView(container) {
                         <td style="color: ${getPartyColor(result.party)}">${getPartyName(result.party)}</td>
                         <td>${result.votes.toLocaleString()}</td>
                         <td>${((result.votes / totalVotes) * 100).toFixed(1)}%</td>
+                        <td>${candidateTotals[result.candidate] ? ((result.votes / candidateTotals[result.candidate]) * 100).toFixed(1) : '0.0'}%</td>
                     `;
                 });
             }
@@ -1937,19 +1997,20 @@ function renderHistoricalView(container) {
             const ctx = document.getElementById('partyChart');
             if (!ctx) return;
             
+            const totalVotes = Object.values(partyVotes).reduce((a, b) => a + b, 0);
             const sortedParties = Object.entries(partyVotes)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
-            
+
             if (charts.party) charts.party.destroy();
-            
+
             charts.party = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: sortedParties.map(p => getPartyName(p[0])),
                     datasets: [{
-                        label: 'Votes',
-                        data: sortedParties.map(p => p[1]),
+                        label: 'Vote %',
+                        data: sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0),
                         backgroundColor: sortedParties.map(p => getPartyColor(p[0]))
                     }]
                 },
@@ -1958,6 +2019,15 @@ function renderHistoricalView(container) {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
                     }
                 }
             });
