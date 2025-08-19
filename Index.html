@@ -911,16 +911,24 @@ function getPartyColor(party) {
         }
         
         function switchElectionType(type) {
+            if (currentElectionType !== type) {
+                document.getElementById('electorateSelect').value = '';
+                document.getElementById('boothSelect').value = '';
+            }
             currentElectionType = type;
             document.getElementById('btnState').classList.toggle('active', type === 'state');
             document.getElementById('btnLC').classList.toggle('active', type === 'lc');
             updateYearDropdown();
             updateDashboard();
         }
-        
+
         function updateDashboard() {
             const scope = document.getElementById('scopeSelect').value;
             const year = document.getElementById('yearSelect').value;
+
+            updateElectorateDropdown();
+            if (scope === 'booth') updateBoothDropdown();
+
             const electorate = document.getElementById('electorateSelect').value;
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
@@ -974,8 +982,6 @@ function getPartyColor(party) {
                     break;
             }
             
-            updateElectorateDropdown();
-            if (scope === 'booth') updateBoothDropdown();
             if (scope === 'candidate') updateCandidateDropdown();
         }
         
