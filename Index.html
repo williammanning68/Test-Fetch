@@ -914,13 +914,31 @@ function getPartyColor(party) {
             currentElectionType = type;
             document.getElementById('btnState').classList.toggle('active', type === 'state');
             document.getElementById('btnLC').classList.toggle('active', type === 'lc');
+
+            // Reset dependent selections when changing election type
+            document.getElementById('electorateSelect').value = '';
+            document.getElementById('boothSelect').value = '';
+            document.getElementById('candidateSelect').value = '';
+
             updateYearDropdown();
             updateDashboard();
         }
-        
+
         function updateDashboard() {
             const scope = document.getElementById('scopeSelect').value;
             const year = document.getElementById('yearSelect').value;
+
+            // Ensure dropdowns reflect the current election type and year
+            if (scope === 'electorate' || scope === 'booth' || scope === 'candidate' || scope === 'boothAnalysis') {
+                updateElectorateDropdown();
+            }
+            if (scope === 'booth') {
+                updateBoothDropdown();
+            }
+            if (scope === 'candidate') {
+                updateCandidateDropdown();
+            }
+
             const electorate = document.getElementById('electorateSelect').value;
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
@@ -973,10 +991,6 @@ function getPartyColor(party) {
                     renderBoothAnalysisView(content, year, electorate);
                     break;
             }
-            
-            updateElectorateDropdown();
-            if (scope === 'booth') updateBoothDropdown();
-            if (scope === 'candidate') updateCandidateDropdown();
         }
         
         function getCurrentData(year, scope, electorate, booth, candidate) {
