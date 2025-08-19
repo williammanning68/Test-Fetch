@@ -2122,7 +2122,67 @@ function renderHistoricalView(container) {
                 }
             });
         }
-        
+
+        function setupGeoJsonOverlayToggle(map) {
+            if (!map || map.__overlayCtlAdded) return;
+            map.__overlayCtlAdded = true;
+
+            const OVERLAY_URLS = {
+                state: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State Election Electorate Boundaries.geojson',
+                legco: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative Council Electorate Boundaries.geojson',
+            };
+
+            const state = { current: null, cache: {} };
+
+            async function buildLayer(key) {
+                if (state.cache[key]) return state.cache[key];
+                const resp = await fetch(OVERLAY_URLS[key]);
+                if (!resp.ok) throw new Error('Overlay fetch failed: ' + resp.status);
+                const data = await resp.json();
+                const layer = L.geoJSON(data, { style: { color: '#000', weight: 1.5, fillOpacity: 0 } });
+                state.cache[key] = layer;
+                return layer;
+            }
+
+            const OverlayCtl = L.Control.extend({
+                options: { position: 'topright' },
+                onAdd: function(map) {
+                    const div = L.DomUtil.create('div', 'leaflet-bar overlay-select-control');
+                    div.style.background = '#fff';
+                    div.style.padding = '6px';
+                    div.style.borderRadius = '8px';
+                    div.style.boxShadow  = '0 1px 3px rgba(0,0,0,.2)';
+                    const label = L.DomUtil.create('label', '', div);
+                    label.textContent = 'Map overlay';
+                    label.style.display = 'block';
+                    label.style.fontSize = '12px';
+                    label.style.marginBottom = '4px';
+                    const sel = L.DomUtil.create('select', '', div);
+                    sel.setAttribute('aria-label', 'Select map overlay');
+                    sel.innerHTML = `
+                        <option value="none">None</option>
+                        <option value="state">State Electorates</option>
+                        <option value="legco">Legislative Council</option>`;
+                    L.DomEvent.disableClickPropagation(div);
+                    sel.addEventListener('change', async (e) => {
+                        const v = e.target.value;
+                        if (state.current) { try { map.removeLayer(state.current); } catch(e){} state.current = null; }
+                        if (v === 'none') return;
+                        try {
+                            const layer = await buildLayer(v);
+                            state.current = layer;
+                            map.addLayer(layer);
+                        } catch (e) {
+                            console.error(e);
+                            alert('Could not load overlay "' + v + '". Check the GeoJSON URL and CORS.');
+                        }
+                    });
+                    return div;
+                }
+            });
+            map.addControl(new OverlayCtl());
+        }
+
         function createBoothSelectionMap(electorate, selectedBooth = '') {
             if (boothMap) {
                 boothMap.remove();
@@ -2212,66 +2272,7 @@ function renderHistoricalView(container) {
                 boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
             }
 
-            // GeoJSON overlay toggle (None / State / LegCo)
-            (function setupGeoJsonOverlayToggleLocal(map) {
-                if (!map || map.__overlayCtlAdded) return;
-                map.__overlayCtlAdded = true;
-
-                const OVERLAY_URLS = {
-                    state: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State Election Electorate Boundaries.geojson',
-                    legco: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative Council Electorate Boundaries.geojson',
-                };
-
-                const state = { current: null, cache: {} };
-
-                async function buildLayer(key) {
-                    if (state.cache[key]) return state.cache[key];
-                    const resp = await fetch(OVERLAY_URLS[key]);
-                    if (!resp.ok) throw new Error('Overlay fetch failed: ' + resp.status);
-                    const data = await resp.json();
-                    const layer = L.geoJSON(data, { style: { color: '#000', weight: 1.5, fillOpacity: 0 } });
-                    state.cache[key] = layer;
-                    return layer;
-                }
-
-                const OverlayCtl = L.Control.extend({
-                    options: { position: 'topright' },
-                    onAdd: function(map) {
-                        const div = L.DomUtil.create('div', 'leaflet-bar overlay-select-control');
-                        div.style.background = '#fff';
-                        div.style.padding = '6px';
-                        div.style.borderRadius = '8px';
-                        div.style.boxShadow  = '0 1px 3px rgba(0,0,0,.2)';
-                        const label = L.DomUtil.create('label', '', div);
-                        label.textContent = 'Map overlay';
-                        label.style.display = 'block';
-                        label.style.fontSize = '12px';
-                        label.style.marginBottom = '4px';
-                        const sel = L.DomUtil.create('select', '', div);
-                        sel.setAttribute('aria-label', 'Select map overlay');
-                        sel.innerHTML = `
-                            <option value="none">None</option>
-                            <option value="state">State Electorates</option>
-                            <option value="legco">Legislative Council</option>`;
-                        L.DomEvent.disableClickPropagation(div);
-                        sel.addEventListener('change', async (e) => {
-                            const v = e.target.value;
-                            if (state.current) { try { map.removeLayer(state.current); } catch(e){} state.current = null; }
-                            if (v === 'none') return;
-                            try {
-                                const layer = await buildLayer(v);
-                                state.current = layer;
-                                map.addLayer(layer);
-                            } catch (e) {
-                                console.error(e);
-                                alert('Could not load overlay "' + v + '". Check the GeoJSON URL and CORS.');
-                            }
-                        });
-                        return div;
-                    }
-                });
-                map.addControl(new OverlayCtl());
-            })(boothMap);
+            setupGeoJsonOverlayToggle(boothMap);
 
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function(map) {
@@ -2366,72 +2367,11 @@ function renderHistoricalView(container) {
                         });
                     })();
                 }
-boothMap.addLayer(mapMarkers);
-                
-                
-                // --- GeoJSON Overlay selector (State, LegCo, LGA) [attached directly to boothMap] ---
-                (function setupGeoJsonOverlayToggleLocal(map) {
-                    if (!map || map.__overlayCtlAdded) return;
-                    map.__overlayCtlAdded = true;
+                boothMap.addLayer(mapMarkers);
 
-                    const OVERLAY_URLS = {
-                        state: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State Election Electorate Boundaries.geojson',
-                        legco: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative Council Electorate Boundaries.geojson',
-                                            };
+                setupGeoJsonOverlayToggle(boothMap);
 
-                    const state = { current: null, cache: {} };
-
-                    async function buildLayer(key) {
-                        if (state.cache[key]) return state.cache[key];
-                        const resp = await fetch(OVERLAY_URLS[key]);
-                        if (!resp.ok) throw new Error('Overlay fetch failed: ' + resp.status);
-                        const data = await resp.json();
-                        const layer = L.geoJSON(data, {
-                            style: { color: '#000', weight: 1.5, fillOpacity: 0 }
-                        });
-                        state.cache[key] = layer;
-                        return layer;
-                    }
-
-                    const OverlayCtl = L.Control.extend({
-                        options: { position: 'topright' },
-                        onAdd: function(map) {
-                            const div = L.DomUtil.create('div', 'leaflet-bar overlay-select-control');
-                            div.style.background = '#fff';
-                            div.style.padding = '6px';
-                            div.style.borderRadius = '8px';
-                            div.style.boxShadow  = '0 1px 3px rgba(0,0,0,.2)';
-                            const label = L.DomUtil.create('label', '', div);
-                            label.textContent = 'Map overlay';
-                            label.style.display = 'block';
-                            label.style.fontSize = '12px';
-                            label.style.marginBottom = '4px';
-                            const sel = L.DomUtil.create('select', '', div);
-                            sel.setAttribute('aria-label', 'Select map overlay');
-                            sel.innerHTML = `
-                                <option value="none">None</option>
-                                <option value="state">State Electorates</option>
-                                <option value="legco">Legislative Council</option>`;
-                            L.DomEvent.disableClickPropagation(div);
-                            sel.addEventListener('change', async (e) => {
-                                const v = e.target.value;
-                                if (state.current) { try { map.removeLayer(state.current); } catch(e){} state.current = null; }
-                                if (v === 'none') return;
-                                try {
-                                    const layer = await buildLayer(v);
-                                    state.current = layer;
-                                    map.addLayer(layer);
-                                } catch (e) {
-                                    console.error(e);
-                                    alert('Could not load overlay "' + v + '". Check the GeoJSON URL and CORS.');
-                                }
-                            });
-                            return div;
-                        }
-                    });
-                    map.addControl(new OverlayCtl());
-                })(boothMap);
-const legend = L.control({position: 'bottomright'});
+                const legend = L.control({position: 'bottomright'});
                 legend.onAdd = function(map) {
                     const div = L.DomUtil.create('div', 'map-legend');
                     div.innerHTML = `
