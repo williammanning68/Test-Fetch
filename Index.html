@@ -640,6 +640,7 @@
         let selectedParties = new Set(['ALL']);
         let boothMap = null;
         let mapMarkers = null;
+        let boothBoundaryLayer = null;
         
         const NON_PHYSICAL_BOOTHS = [
             'postal', 'pre-poll', 'prepoll', 'mobile', 'provisional', 
@@ -2126,6 +2127,7 @@ function renderHistoricalView(container) {
             if (boothMap) {
                 boothMap.remove();
             }
+            boothBoundaryLayer = null;
             boothMap = L.map('boothMap').setView([-42.0, 147.0], 7);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -2228,14 +2230,10 @@ function renderHistoricalView(container) {
                 }
             });
 
-            if (mapMarkers.getLayers().length > 0) {
-                boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
-            }
-
             if (electorate) {
                 const boundaryUrl = currentElectionType === 'state'
-                    ? 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State%20Election%20Electorate%20Boundaries.geojson'
-                    : 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative%20Council%20Electorate%20Boundaries.geojson';
+                    ? 'State%20Election%20Electorate%20Boundaries.geojson'
+                    : 'Legislative%20Council%20Electorate%20Boundaries.geojson';
 
                 fetch(boundaryUrl)
                     .then(resp => resp.json())
@@ -2243,13 +2241,25 @@ function renderHistoricalView(container) {
                         const match = data.features.find(f =>
                             f.properties && f.properties.Name === electorate);
                         if (match) {
-                            const layer = L.geoJSON(match, {
+                            if (boothBoundaryLayer) {
+                                boothMap.removeLayer(boothBoundaryLayer);
+                            }
+                            boothBoundaryLayer = L.geoJSON(match, {
                                 style: { color: '#333', weight: 2, fillOpacity: 0 }
                             }).addTo(boothMap);
-                            boothMap.fitBounds(layer.getBounds(), { padding: [20, 20] });
+                            boothMap.fitBounds(boothBoundaryLayer.getBounds(), { padding: [20, 20] });
+                        } else if (mapMarkers.getLayers().length > 0) {
+                            boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
                         }
                     })
-                    .catch(err => console.error('Failed to load electorate boundary', err));
+                    .catch(err => {
+                        console.error('Failed to load electorate boundary', err);
+                        if (mapMarkers.getLayers().length > 0) {
+                            boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
+                        }
+                    });
+            } else if (mapMarkers.getLayers().length > 0) {
+                boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
             }
         }
 
