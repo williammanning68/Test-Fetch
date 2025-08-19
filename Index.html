@@ -1333,6 +1333,7 @@ function getPartyColor(party) {
             container.innerHTML = `
                 <div class="panel full-width">
                     <h2>Candidate Profile - ${candidateName}</h2>
+                    <div id="candidateTopline"></div>
                     <div class="panel-grid">
                         <div>
                             <h3>Performance by Location</h3>
@@ -1928,6 +1929,25 @@ function renderHistoricalView(container) {
                 };
             }}
         
+        function computeCandidateStats(candidate, electorateData) {
+            const totalVotes = electorateData.reduce((sum, c) => sum + (c.v || 0), 0);
+            const primaryPct = totalVotes ? (candidate.v / totalVotes) * 100 : 0;
+
+            const candidateParty = normalizeParty(candidate.p);
+            const partyCandidates = electorateData.filter(c => normalizeParty(c.p) === candidateParty);
+            const partyTotal = partyCandidates.reduce((sum, c) => sum + (c.v || 0), 0);
+            const partyShare = partyTotal ? (candidate.v / partyTotal) * 100 : 0;
+
+            const sortedParty = partyCandidates.slice().sort((a, b) => b.v - a.v);
+            const rank = sortedParty.findIndex(c => c.c === candidate.c) + 1;
+
+            const seats = currentElectionType === 'state' ? 5 : 1;
+            const quota = totalVotes / (seats + 1);
+            const quotaProgress = quota ? (candidate.v / quota) * 100 : 0;
+
+            return { primaryPct, partyShare, rank, quotaProgress };
+        }
+
         function loadCandidateData(year, candidate) {
             const data = getCurrentData(year, 'candidate', '', '', candidate);
             
@@ -1939,7 +1959,21 @@ function renderHistoricalView(container) {
             
             const candidateData = data[0];
             const boothResults = candidateData.b || [];
-            
+
+            const electorateData = getCurrentData(year, 'electorate', candidateData.d, '', '');
+            const stats = computeCandidateStats(candidateData, electorateData);
+            const topline = document.getElementById('candidateTopline');
+            if (topline) {
+                topline.innerHTML = `
+                    <h3>Topline Performance</h3>
+                    <ul>
+                        <li>Primary vote: ${stats.primaryPct.toFixed(1)}%</li>
+                        <li>Party vote share: ${stats.partyShare.toFixed(1)}%</li>
+                        <li>Party rank: ${stats.rank}</li>
+                        <li>Quota progress: ${stats.quotaProgress.toFixed(1)}%</li>
+                    </ul>`;
+            }
+
             // Sort booths by votes
             boothResults.sort((a, b) => b.v - a.v);
             
