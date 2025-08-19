@@ -1335,30 +1335,78 @@ function getPartyColor(party) {
                     <h2>Candidate Profile - ${candidateName}</h2>
                     <div class="panel-grid">
                         <div>
+                            <h3>Topline Performance</h3>
+                            <div class="table-container">
+                                <table id="candidateSummaryTable">
+                                    <tbody>
+                                        <tr><td>Total Primary Votes</td><td>—</td></tr>
+                                        <tr><td>Vote %</td><td>—</td></tr>
+                                        <tr><td>Share of Party Vote</td><td>—</td></tr>
+                                        <tr><td>Rank within Party</td><td>—</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
                             <h3>Performance by Location</h3>
                             <div class="chart-container">
                                 <canvas id="candidateLocationChart"></canvas>
                             </div>
                         </div>
-                        <div>
-                            <h3>Booth-by-Booth Results</h3>
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Booth</th>
-                                            <th>Electorate</th>
-                                            <th>Votes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="candidateBoothBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+                <div class="panel full-width">
+                    <h3>Booth-by-Booth Results</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Booth</th>
+                                    <th>Electorate</th>
+                                    <th>Votes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidateBoothBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel half-width">
+                    <h3>Top Booths</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Booth</th><th>Votes</th><th>%</th><th>Swing</th></tr>
+                            </thead>
+                            <tbody id="candidateTopBoothBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel half-width">
+                    <h3>Booth Distribution</h3>
+                    <div class="chart-container" style="height:300px;">
+                        <canvas id="candidateDistribChart"></canvas>
+                    </div>
+                    <div class="table-container">
+                        <table id="candidateDistributionStats">
+                            <tbody>
+                                <tr><td>Median booth %</td><td>—</td></tr>
+                                <tr><td>IQR</td><td>—</td></tr>
+                                <tr><td>Coeff. of Variation</td><td>—</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel full-width">
+                    <h3>Outlier Booths</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Booth</th><th>%</th></tr></thead>
+                            <tbody id="candidateOutlierBody"></tbody>
+                        </table>
                     </div>
                 </div>
             `;
-            
+
             if (candidate) {
                 loadCandidateData(year, candidate);
             }
@@ -1930,36 +1978,175 @@ function renderHistoricalView(container) {
         
         function loadCandidateData(year, candidate) {
             const data = getCurrentData(year, 'candidate', '', '', candidate);
-            
+
             if (!candidate || data.length === 0) {
-                document.getElementById('candidateBoothBody').innerHTML = 
+                document.getElementById('candidateBoothBody').innerHTML =
                     '<tr><td colspan="3">No data available for selected candidate</td></tr>';
                 return;
             }
-            
+
             const candidateData = data[0];
+            const electorateData = getCurrentData(year, 'electorate', candidateData.d, '', '');
             const boothResults = candidateData.b || [];
-            
-            // Sort booths by votes
-            boothResults.sort((a, b) => b.v - a.v);
-            
-            // Update table
-            const tbody = document.getElementById('candidateBoothBody');
-            if (tbody) {
-                tbody.innerHTML = '';
-                
-                boothResults.forEach(booth => {
-                    if (isPhysicalBooth(booth.n)) {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td>${booth.n}</td>
-                            <td>${candidateData.d}</td>
-                            <td>${booth.v.toLocaleString()}</td>
-                        `;
+
+            // Build booth totals for percentage calculations
+            const boothTotals = {};
+            electorateData.forEach(c => {
+                if (c.b && Array.isArray(c.b)) {
+                    c.b.forEach(b => {
+                        if (!isPhysicalBooth(b.n)) return;
+                        boothTotals[b.n] = (boothTotals[b.n] || 0) + (b.v || 0);
+                    });
+                }
+            });
+
+            // Calculate booth percentages and optionally swing
+            const prevYear = getPreviousYear(year);
+            let prevBoothMap = {};
+            let prevBoothTotals = {};
+            if (prevYear) {
+                const prevData = getCurrentData(prevYear, 'candidate', '', '', candidate);
+                if (prevData.length > 0 && prevData[0].b) {
+                    prevData[0].b.forEach(b => {
+                        prevBoothMap[b.n] = b.v;
+                    });
+                }
+                const prevElect = getCurrentData(prevYear, 'electorate', candidateData.d, '', '');
+                prevElect.forEach(c => {
+                    if (c.b && Array.isArray(c.b)) {
+                        c.b.forEach(b => {
+                            if (!isPhysicalBooth(b.n)) return;
+                            prevBoothTotals[b.n] = (prevBoothTotals[b.n] || 0) + (b.v || 0);
+                        });
                     }
                 });
             }
-            
+
+            const boothPercents = [];
+            boothResults.forEach(b => {
+                if (!isPhysicalBooth(b.n)) return;
+                const total = boothTotals[b.n] || 0;
+                const pct = total ? (b.v / total * 100) : 0;
+                const prevVotes = prevBoothMap[b.n] || 0;
+                const prevTotal = prevBoothTotals[b.n] || 0;
+                const prevPct = prevYear && prevVotes && prevTotal ? (prevVotes / prevTotal * 100) : null;
+                boothPercents.push({ name: b.n, votes: b.v, pct, swing: prevPct !== null ? (pct - prevPct) : null });
+            });
+
+            // Sort booths by votes
+            const sortedBooths = boothPercents.slice().sort((a, b) => b.votes - a.votes);
+
+            // Update full booth table
+            const tbody = document.getElementById('candidateBoothBody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                sortedBooths.forEach(booth => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${booth.name}</td>
+                        <td>${candidateData.d}</td>
+                        <td>${booth.votes.toLocaleString()}</td>
+                    `;
+                });
+            }
+
+            // Topline performance summary
+            const totalVotes = candidateData.v || 0;
+            const electorateTotal = electorateData.reduce((sum, c) => sum + (c.v || 0), 0);
+            const votePct = electorateTotal ? (totalVotes / electorateTotal * 100) : 0;
+            const partyTotal = electorateData
+                .filter(c => normalizeParty(c.p) === normalizeParty(candidateData.p))
+                .reduce((sum, c) => sum + (c.v || 0), 0);
+            const partyShare = partyTotal ? (totalVotes / partyTotal * 100) : 0;
+            const partyRankings = electorateData
+                .filter(c => normalizeParty(c.p) === normalizeParty(candidateData.p))
+                .sort((a, b) => b.v - a.v);
+            const partyRank = partyRankings.findIndex(c => c.c === candidateData.c) + 1;
+
+            const summaryBody = document.getElementById('candidateSummaryTable')?.querySelector('tbody');
+            if (summaryBody) {
+                summaryBody.innerHTML = `
+                    <tr><td>Total Primary Votes</td><td>${totalVotes.toLocaleString()}</td></tr>
+                    <tr><td>Vote %</td><td>${votePct.toFixed(1)}%</td></tr>
+                    <tr><td>Share of Party Vote</td><td>${partyShare.toFixed(1)}%</td></tr>
+                    <tr><td>Rank within Party</td><td>${partyRank} of ${partyRankings.length}</td></tr>
+                `;
+            }
+
+            // Top booths table (by percentage)
+            const topBody = document.getElementById('candidateTopBoothBody');
+            if (topBody) {
+                const topBooths = boothPercents.slice().sort((a, b) => b.pct - a.pct).slice(0, 10);
+                topBody.innerHTML = topBooths.map(b => `
+                    <tr><td>${b.name}</td><td>${b.votes.toLocaleString()}</td><td>${b.pct.toFixed(1)}%</td><td>${b.swing !== null ? b.swing.toFixed(1) + 'pp' : '—'}</td></tr>
+                `).join('');
+            }
+
+            // Distribution statistics
+            const pctValues = boothPercents.map(b => b.pct).sort((a, b) => a - b);
+            const median = arr => {
+                const m = Math.floor(arr.length / 2);
+                return arr.length % 2 ? arr[m] : (arr[m - 1] + arr[m]) / 2;
+            };
+            const q1 = median(pctValues.slice(0, Math.floor(pctValues.length / 2)));
+            const q3 = median(pctValues.slice(Math.ceil(pctValues.length / 2)));
+            const med = median(pctValues);
+            const iqr = q3 - q1;
+            const mean = pctValues.reduce((a, b) => a + b, 0) / (pctValues.length || 1);
+            const sd = Math.sqrt(pctValues.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (pctValues.length || 1));
+            const cov = mean ? sd / mean : 0;
+
+            const distBody = document.getElementById('candidateDistributionStats')?.querySelector('tbody');
+            if (distBody) {
+                distBody.innerHTML = `
+                    <tr><td>Median booth %</td><td>${med.toFixed(1)}%</td></tr>
+                    <tr><td>IQR</td><td>${iqr.toFixed(1)}pp</td></tr>
+                    <tr><td>Coeff. of Variation</td><td>${cov.toFixed(2)}</td></tr>
+                `;
+            }
+
+            // Histogram of booth percentages
+            const bins = Array(10).fill(0);
+            pctValues.forEach(p => {
+                const idx = Math.min(9, Math.floor(p / 10));
+                bins[idx]++;
+            });
+            const ctx = document.getElementById('candidateDistribChart');
+            if (ctx) {
+                if (charts.candidateDistrib) charts.candidateDistrib.destroy();
+                charts.candidateDistrib = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'],
+                        datasets: [{
+                            label: 'Booths',
+                            data: bins,
+                            backgroundColor: '#888'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+            }
+
+            // Outlier booths based on residuals from overall vote %
+            const baseline = votePct;
+            const outliers = boothPercents.filter(b => Math.abs(b.pct - baseline) > 1.5 * iqr);
+            const outBody = document.getElementById('candidateOutlierBody');
+            if (outBody) {
+                if (outliers.length === 0) {
+                    outBody.innerHTML = '<tr><td colspan="2">None</td></tr>';
+                } else {
+                    outBody.innerHTML = outliers.map(o => `
+                        <tr><td>${o.name}</td><td>${o.pct.toFixed(1)}%</td></tr>
+                    `).join('');
+                }
+            }
+
             // Create location chart
             createCandidateLocationChart(boothResults.filter(b => isPhysicalBooth(b.n)));
         }
