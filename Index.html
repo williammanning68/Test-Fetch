@@ -640,7 +640,6 @@
         let selectedParties = new Set(['ALL']);
         let boothMap = null;
         let mapMarkers = null;
-        let boothBoundaryLayer = null;
         
         const NON_PHYSICAL_BOOTHS = [
             'postal', 'pre-poll', 'prepoll', 'mobile', 'provisional', 
@@ -2127,7 +2126,6 @@ function renderHistoricalView(container) {
             if (boothMap) {
                 boothMap.remove();
             }
-            boothBoundaryLayer = null;
             boothMap = L.map('boothMap').setView([-42.0, 147.0], 7);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -2168,6 +2166,7 @@ function renderHistoricalView(container) {
             const boothWinners = calculateBoothWinners(year, electorate || '');
             const winnerMap = new Map();
             boothWinners.forEach(b => winnerMap.set(keyForBooth(b.name), b));
+            let selectedBoothLatLng = null;
 
             // For LC elections, build a map of booth names to their LC electorates
             let lcBoothMap = null;
@@ -2224,40 +2223,14 @@ function renderHistoricalView(container) {
                     }
                 });
 
-                if (selectedBooth && keyForBooth(selectedBooth) === keyForBooth(name)) {
+                if (selectedBooth && keyForBooth(selectedBooth) === key) {
+                    selectedBoothLatLng = [info.lat, info.lng];
                     marker.openPopup();
-                    boothMap.setView([info.lat, info.lng], 12);
                 }
             });
 
-            if (electorate) {
-                const boundaryUrl = currentElectionType === 'state'
-                    ? 'State%20Election%20Electorate%20Boundaries.geojson'
-                    : 'Legislative%20Council%20Electorate%20Boundaries.geojson';
-
-                fetch(boundaryUrl)
-                    .then(resp => resp.json())
-                    .then(data => {
-                        const match = data.features.find(f =>
-                            f.properties && f.properties.Name === electorate);
-                        if (match) {
-                            if (boothBoundaryLayer) {
-                                boothMap.removeLayer(boothBoundaryLayer);
-                            }
-                            boothBoundaryLayer = L.geoJSON(match, {
-                                style: { color: '#333', weight: 2, fillOpacity: 0 }
-                            }).addTo(boothMap);
-                            boothMap.fitBounds(boothBoundaryLayer.getBounds(), { padding: [20, 20] });
-                        } else if (mapMarkers.getLayers().length > 0) {
-                            boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Failed to load electorate boundary', err);
-                        if (mapMarkers.getLayers().length > 0) {
-                            boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
-                        }
-                    });
+            if (selectedBoothLatLng) {
+                boothMap.setView(selectedBoothLatLng, 12);
             } else if (mapMarkers.getLayers().length > 0) {
                 boothMap.fitBounds(mapMarkers.getBounds(), { padding: [50, 50] });
             }
