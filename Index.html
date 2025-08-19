@@ -914,13 +914,31 @@ function getPartyColor(party) {
             currentElectionType = type;
             document.getElementById('btnState').classList.toggle('active', type === 'state');
             document.getElementById('btnLC').classList.toggle('active', type === 'lc');
+
+            // Reset dependent selections when changing election type
+            document.getElementById('electorateSelect').value = '';
+            document.getElementById('boothSelect').value = '';
+            document.getElementById('candidateSelect').value = '';
+
             updateYearDropdown();
             updateDashboard();
         }
-        
+
         function updateDashboard() {
             const scope = document.getElementById('scopeSelect').value;
             const year = document.getElementById('yearSelect').value;
+
+            // Ensure dropdowns reflect the current election type and year
+            if (scope === 'electorate' || scope === 'booth' || scope === 'candidate' || scope === 'boothAnalysis') {
+                updateElectorateDropdown();
+            }
+            if (scope === 'booth') {
+                updateBoothDropdown();
+            }
+            if (scope === 'candidate') {
+                updateCandidateDropdown();
+            }
+
             const electorate = document.getElementById('electorateSelect').value;
             const booth = document.getElementById('boothSelect').value;
             const candidate = document.getElementById('candidateSelect').value;
@@ -973,10 +991,6 @@ function getPartyColor(party) {
                     renderBoothAnalysisView(content, year, electorate);
                     break;
             }
-            
-            updateElectorateDropdown();
-            if (scope === 'booth') updateBoothDropdown();
-            if (scope === 'candidate') updateCandidateDropdown();
         }
         
         function getCurrentData(year, scope, electorate, booth, candidate) {
@@ -2120,10 +2134,42 @@ function renderHistoricalView(container) {
 
             mapMarkers = L.layerGroup().addTo(boothMap);
 
+            // Show legend of party colours
+            const legend = L.control({position: 'bottomright'});
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'map-legend');
+                div.innerHTML = `
+                    <h4>Party Colors</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getPartyColor('ALP')}"></div>
+                        <span>Labor</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getPartyColor('LIB')}"></div>
+                        <span>Liberal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getPartyColor('GRN')}"></div>
+                        <span>Greens</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${getPartyColor('IND')}"></div>
+                        <span>Independent</span>
+                    </div>
+                `;
+                return div;
+            };
+            legend.addTo(boothMap);
+
+            // Build map of booth winners for marker colouring
+            const year = document.getElementById('yearSelect').value;
+            const boothWinners = calculateBoothWinners(year, electorate || '');
+            const winnerMap = new Map();
+            boothWinners.forEach(b => winnerMap.set(keyForBooth(b.name), b));
+
             // For LC elections, build a map of booth names to their LC electorates
             let lcBoothMap = null;
             if (currentElectionType === 'lc') {
-                const year = document.getElementById('yearSelect').value;
                 lcBoothMap = new Map();
                 const data = ELECTION_DATA.lc[year] || [];
                 data.forEach(candidate => {
@@ -2147,11 +2193,25 @@ function renderHistoricalView(container) {
                     if (electorate && lcBoothMap.get(key) !== electorate) return;
                 }
 
-                const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
+                const winner = winnerMap.get(key);
+                const markerColor = winner ? getPartyColor(winner.party) : getPartyColor('INF');
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color:${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                const marker = L.marker([info.lat, info.lng], {icon}).addTo(mapMarkers);
                 const popupElectorate = (currentElectionType === 'lc')
                     ? lcBoothMap.get(key)
                     : info.electorate;
-                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${popupElectorate}</p></div>`);
+                let popupContent = `<div class="booth-popup"><h3>${name}</h3><p><strong>Electorate:</strong> ${popupElectorate}</p>`;
+                if (winner) {
+                    popupContent += `<p><strong>Winner:</strong> <span class="winner" style="background: ${markerColor}">${getPartyName(winner.party)}</span></p><p><strong>Votes:</strong> ${winner.votes.toLocaleString()}</p>`;
+                }
+                popupContent += `</div>`;
+                marker.bindPopup(popupContent);
                 marker.on('click', () => {
                     const boothSelect = document.getElementById('boothSelect');
                     const options = Array.from(boothSelect.options);
