@@ -2120,10 +2120,15 @@ function renderHistoricalView(container) {
 
             mapMarkers = L.layerGroup().addTo(boothMap);
 
+            const year = document.getElementById('yearSelect').value;
+            const boothWinnersLookup = new Map();
+            calculateBoothWinners(year, electorate || '').forEach(b => {
+                boothWinnersLookup.set(keyForBooth(b.name), b);
+            });
+
             // For LC elections, build a map of booth names to their LC electorates
             let lcBoothMap = null;
             if (currentElectionType === 'lc') {
-                const year = document.getElementById('yearSelect').value;
                 lcBoothMap = new Map();
                 const data = ELECTION_DATA.lc[year] || [];
                 data.forEach(candidate => {
@@ -2147,11 +2152,20 @@ function renderHistoricalView(container) {
                     if (electorate && lcBoothMap.get(key) !== electorate) return;
                 }
 
-                const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
+                const winner = boothWinnersLookup.get(key);
+                const markerColor = winner ? getPartyColor(winner.party) : '#B8B8B8';
+                const marker = L.circleMarker([info.lat, info.lng], {
+                    radius: 6,
+                    color: '#000',
+                    weight: 1,
+                    fillColor: markerColor,
+                    fillOpacity: 1
+                }).addTo(mapMarkers);
                 const popupElectorate = (currentElectionType === 'lc')
                     ? lcBoothMap.get(key)
                     : info.electorate;
-                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${popupElectorate}</p></div>`);
+                const partyName = winner ? getPartyName(winner.party) : 'Unknown';
+                marker.bindPopup(`<div class="booth-popup"><h3>${name} - ${partyName}</h3><p>${popupElectorate}</p></div>`);
                 marker.on('click', () => {
                     const boothSelect = document.getElementById('boothSelect');
                     const options = Array.from(boothSelect.options);
