@@ -2142,14 +2142,19 @@ function renderHistoricalView(container) {
             const winnerMap = new Map();
             winners.forEach(w => winnerMap.set(keyForBooth(w.name), w));
 
-            // For LC elections, build booth->electorate map
+            // For LC elections, build a map of booth names to their LC electorates
             let lcBoothMap = null;
             if (currentElectionType === 'lc') {
                 lcBoothMap = new Map();
                 const data = (ELECTION_DATA.lc && ELECTION_DATA.lc[year]) || [];
                 data.forEach(row => {
                     if (Array.isArray(row.b)) {
-                        row.b.forEach(b => lcBoothMap.set(keyForBooth(b.n), row.d));
+                        row.b.forEach(b => {
+                            const key = keyForBooth(b.n);
+                            if (!lcBoothMap.has(key)) {
+                                lcBoothMap.set(key, row.d);
+                            }
+                        });
                     }
                 });
             }
