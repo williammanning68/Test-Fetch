@@ -2120,27 +2120,38 @@ function renderHistoricalView(container) {
 
             mapMarkers = L.layerGroup().addTo(boothMap);
 
-            // For LC elections, build a set of booth names that belong to the selected electorate
-            let lcBoothSet = null;
-            if (currentElectionType === 'lc' && electorate) {
+            // For LC elections, build a map of booth names to their LC electorates
+            let lcBoothMap = null;
+            if (currentElectionType === 'lc') {
                 const year = document.getElementById('yearSelect').value;
-                const data = getCurrentData(year, 'electorate', electorate, '', '');
-                lcBoothSet = new Set();
+                lcBoothMap = new Map();
+                const data = ELECTION_DATA.lc[year] || [];
                 data.forEach(candidate => {
                     if (Array.isArray(candidate.b)) {
-                        candidate.b.forEach(b => lcBoothSet.add(keyForBooth(b.n)));
+                        candidate.b.forEach(b => {
+                            const key = keyForBooth(b.n);
+                            if (!lcBoothMap.has(key)) {
+                                lcBoothMap.set(key, candidate.d);
+                            }
+                        });
                     }
                 });
             }
 
             Object.entries(POLLING_PLACES).forEach(([name, info]) => {
-                if (electorate) {
-                    if (currentElectionType === 'state' && info.electorate !== electorate) return;
-                    if (currentElectionType === 'lc' && lcBoothSet && !lcBoothSet.has(keyForBooth(name))) return;
+                const key = keyForBooth(name);
+                if (currentElectionType === 'state') {
+                    if (electorate && info.electorate !== electorate) return;
+                } else if (currentElectionType === 'lc') {
+                    if (!lcBoothMap || !lcBoothMap.has(key)) return;
+                    if (electorate && lcBoothMap.get(key) !== electorate) return;
                 }
 
                 const marker = L.marker([info.lat, info.lng]).addTo(mapMarkers);
-                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${electorate || info.electorate}</p></div>`);
+                const popupElectorate = (currentElectionType === 'lc')
+                    ? lcBoothMap.get(key)
+                    : info.electorate;
+                marker.bindPopup(`<div class="booth-popup"><h3>${name}</h3><p>${popupElectorate}</p></div>`);
                 marker.on('click', () => {
                     const boothSelect = document.getElementById('boothSelect');
                     const options = Array.from(boothSelect.options);
