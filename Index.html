@@ -2009,8 +2009,11 @@ function renderHistoricalView(container) {
             const ctx = document.getElementById('seatChart');
             if (!ctx) return;
             
-            const parties = Object.keys(partySeats);
-            const seats = Object.values(partySeats);
+            // Sort parties by seats won (descending) so bars display high to low
+            const sorted = Object.entries(partySeats)
+                .sort((a, b) => b[1] - a[1]);
+            const parties = sorted.map(entry => entry[0]);
+            const seats = sorted.map(entry => entry[1]);
             
             if (charts.seats) charts.seats.destroy();
             
