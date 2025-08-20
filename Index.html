@@ -2379,7 +2379,7 @@ function renderHistoricalView(container) {
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(boothMap);
-            mapMarkers = L.layerGroup().addTo(boothMap);
+            mapMarkers = L.featureGroup().addTo(boothMap);
 
             const percentages = boothStats.map(b => b.percentage);
             const maxPct = Math.max(...percentages);
@@ -2562,7 +2562,7 @@ function renderHistoricalView(container) {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(boothMap);
 
-            mapMarkers = L.layerGroup().addTo(boothMap);
+            mapMarkers = L.featureGroup().addTo(boothMap);
 
             // Show legend of party colours
             const legend = L.control({position: 'bottomright'});
