@@ -1389,9 +1389,10 @@ function getPartyColor(party) {
         <div class="panel full-width">
             <h2>${candidateName}</h2>
             <p style="margin-top: -0.5rem; color: #666;">
-                <span style="color: ${getPartyColor(party)}; font-weight: 600;">${getPartyName(party)}</span> 
+                <span style="color: ${getPartyColor(party)}; font-weight: 600;">${getPartyName(party)}</span>
                 • ${electorate} • ${currentElectionType === 'state' ? 'State Election' : 'Legislative Council'} ${year}
             </p>
+            <p id="candidateSummary" style="margin-top: 0.5rem; color: #333;"></p>
         </div>
 
         <!-- Topline Performance -->
@@ -3199,6 +3200,11 @@ function createBoothFlipsChart() {
             const sortedParty = partyCandidates.sort((a, b) => b.v - a.v);
             const partyRank = sortedParty.findIndex(c => normalizeCandidateName(c.c) === candidateNorm) + 1;
 
+            const statewideData = getCurrentData(year, 'state', '', '', '');
+            const statewideParty = statewideData.filter(c => normalizeParty(c.p) === normalizedParty);
+            const sortedStateParty = statewideParty.sort((a, b) => b.v - a.v);
+            const statewidePartyRank = sortedStateParty.findIndex(c => normalizeCandidateName(c.c) === candidateNorm) + 1;
+
             document.getElementById('primaryVotes').textContent = totalVotes.toLocaleString();
             document.getElementById('primaryPercent').textContent = `${primaryPercent}% of electorate`;
             document.getElementById('partyShare').textContent = `${partyShare}%`;
@@ -3329,6 +3335,32 @@ function createBoothFlipsChart() {
             `;
                 });
             }
+
+            const formatList = items => {
+                if (items.length === 0) return '';
+                if (items.length === 1) return items[0];
+                if (items.length === 2) return `${items[0]} and ${items[1]}`;
+                return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+            };
+
+            const topBoothNames = sortedBooths.slice(0, 4).map(b => b.name);
+            const bottomBoothNames = sortedBooths.slice(-5).map(b => b.name).reverse();
+            let summary = `${candidate} achieved a first preference result of ${totalVotes.toLocaleString()} or ${primaryPercent}%.`;
+            summary += ` They ranked #${partyRank} compared to others in their party within the electorate of ${electorate}, and #${statewidePartyRank} compared to all other ${getPartyName(party)} candidates across all electorates.`;
+            if (topBoothNames.length > 0) {
+                summary += ` Their highest performing booths were ${formatList(topBoothNames)}.`;
+            }
+            if (bottomBoothNames.length > 0) {
+                summary += ` While their lowest performing booths were ${formatList(bottomBoothNames)}.`;
+            }
+            if (prevData && swing !== null) {
+                const perf = parseFloat(swing) > 0 ? 'better' : parseFloat(swing) < 0 ? 'worse' : 'the same';
+                summary += ` Compared to their previous election results, they achieved a ${perf} result, with an overall swing of ${parseFloat(swing) > 0 ? '+' : ''}${swing}%.`;
+            } else {
+                summary += ' No previous election data available for comparison.';
+            }
+            const summaryEl = document.getElementById('candidateSummary');
+            if (summaryEl) summaryEl.textContent = summary;
 
             const percentages = boothStats.map(b => b.percentage);
             percentages.sort((a, b) => a - b);
