@@ -1352,6 +1352,10 @@ function getPartyColor(party) {
                             <div class="chart-container">
                                 <canvas id="voteChart"></canvas>
                             </div>
+                            <h3 style="margin-top:1.5rem;">Party Vote Share Trend</h3>
+                            <div class="chart-container">
+                                <canvas id="boothPartyTrendChart"></canvas>
+                            </div>
                             <h3 style="margin-top:1.5rem;">Detailed Results</h3>
                             <div class="table-container">
                                 <table>
@@ -1377,6 +1381,7 @@ function getPartyColor(party) {
             `;
 
             loadBoothData(year, electorate, booth);
+            createBoothPartyTrendChart(booth);
             createBoothSelectionMap(electorate, booth);
         }
         
@@ -3770,6 +3775,106 @@ function createBoothFlipsChart() {
         }
         
         
+        function createBoothPartyTrendChart(booth) {
+            const ctx = document.getElementById('boothPartyTrendChart');
+            if (!ctx) return;
+
+            const years = getAvailableYears();
+            const parties = new Set();
+
+            years.forEach(year => {
+                const data = currentElectionType === 'state' ? ELECTION_DATA.state[year] : ELECTION_DATA.lc[year];
+                if (!data) return;
+                data.forEach(candidate => {
+                    const party = normalizeParty(candidate.p);
+                    if (candidate.b && Array.isArray(candidate.b)) {
+                        if (booth) {
+                            const boothData = candidate.b.find(b => b.n === booth);
+                            if (boothData && isPhysicalBooth(boothData.n)) {
+                                parties.add(party);
+                            }
+                        } else {
+                            candidate.b.forEach(b => {
+                                if (isPhysicalBooth(b.n)) {
+                                    parties.add(party);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            const partyList = Array.from(parties).sort();
+            const partyData = {};
+            partyList.forEach(p => partyData[p] = []);
+
+            years.forEach(year => {
+                const data = currentElectionType === 'state' ? ELECTION_DATA.state[year] : ELECTION_DATA.lc[year];
+                const partyVotes = {};
+                let totalVotes = 0;
+
+                if (data) {
+                    data.forEach(candidate => {
+                        const party = normalizeParty(candidate.p);
+                        if (candidate.b && Array.isArray(candidate.b)) {
+                            if (booth) {
+                                const boothData = candidate.b.find(b => b.n === booth);
+                                if (boothData && isPhysicalBooth(boothData.n)) {
+                                    partyVotes[party] = (partyVotes[party] || 0) + boothData.v;
+                                    totalVotes += boothData.v;
+                                }
+                            } else {
+                                candidate.b.forEach(b => {
+                                    if (isPhysicalBooth(b.n)) {
+                                        partyVotes[party] = (partyVotes[party] || 0) + b.v;
+                                        totalVotes += b.v;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+                partyList.forEach(party => {
+                    const votes = partyVotes[party] || 0;
+                    const pct = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+                    partyData[party].push(pct);
+                });
+            });
+
+            if (charts.boothPartyTrend) charts.boothPartyTrend.destroy();
+
+            charts.boothPartyTrend = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: partyList.map(party => ({
+                        label: getPartyName(party),
+                        data: partyData[party],
+                        borderColor: getPartyColor(party),
+                        backgroundColor: getPartyColor(party) + '20',
+                        tension: 0.2,
+                        fill: false
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => value + '%'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         function createBoothSelectionMap(electorate, selectedBooth = '') {
             if (boothMap) {
                 boothMap.remove();
