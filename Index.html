@@ -3347,7 +3347,9 @@ function createBoothFlipsChart() {
             const topBoothNames = sortedBooths.slice(0, 4).map(b => b.name);
             const bottomBoothNames = sortedBooths.slice(-5).map(b => b.name).reverse();
             let summary = `${candidate} achieved a first preference result of ${totalVotes.toLocaleString()} or ${primaryPercent}%.`;
-            summary += ` They ranked #${partyRank} compared to others in their party within the electorate of ${electorate}, and #${statewidePartyRank} compared to all other ${getPartyName(party)} candidates across all electorates.`;
+            const electorateComparison = normalizedParty === 'IND' ? 'other independent candidates' : 'others in their party';
+            const statewideComparison = normalizedParty === 'IND' ? 'all other independent candidates' : `all other ${getPartyName(party)} candidates`;
+            summary += ` They ranked #${partyRank} compared to ${electorateComparison} within the electorate of ${electorate}, and #${statewidePartyRank} compared to ${statewideComparison} across all electorates.`;
             if (topBoothNames.length > 0) {
                 summary += ` Their highest performing booths were ${formatList(topBoothNames)}.`;
             }
