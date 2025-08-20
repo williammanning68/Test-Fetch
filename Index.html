@@ -191,7 +191,36 @@
         .table-container.small {
             max-height: 250px;
         }
-        
+
+        .summary-tiles {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .summary-tile {
+            flex: 1;
+            min-width: 150px;
+            background: var(--federal-light);
+            border: 1px solid var(--federal-light);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-tile h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--federal-navy);
+        }
+
+        .summary-tile p {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--federal-dark);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -876,7 +905,11 @@ function getPartyColor(party) {
                         {"electorate": "Bass", "party": "LIBERAL", "seats_won": 4, "total_seat_pct": "11.43%"}
                     ]
                 },
-                lc: {}
+                lc: {
+                    "2024": [
+                        {"electorate": "Elwick", "winner_party": "IND", "winner_candidate": "Demo LC Candidate", "tcp_pct": 55, "margin_pct": 10}
+                    ]
+                }
             };
             
             // Add demo polling places if not loaded
@@ -967,6 +1000,11 @@ function getPartyColor(party) {
             document.getElementById('btnState').classList.toggle('active', type === 'state');
             document.getElementById('btnLC').classList.toggle('active', type === 'lc');
 
+            const scopeSelect = document.getElementById('scopeSelect');
+            if (scopeSelect && scopeSelect.options.length > 0) {
+                scopeSelect.options[0].textContent = type === 'lc' ? 'Year Overview' : 'Statewide';
+            }
+
             // Reset dependent selections when changing election type
             document.getElementById('electorateSelect').value = '';
             document.getElementById('boothSelect').value = '';
@@ -1043,6 +1081,8 @@ function getPartyColor(party) {
                     renderBoothAnalysisView(content, year, electorate);
                     break;
             }
+
+            initializePartyFilter();
         }
         
         function getCurrentData(year, scope, electorate, booth, candidate) {
@@ -1066,20 +1106,36 @@ function getPartyColor(party) {
             
             return data;
         }
+
+        function getPreviousLCElectionYear(electorate, year) {
+            const years = Object.keys(ELECTION_DATA.lc)
+                .map(y => parseInt(y))
+                .filter(y => y < parseInt(year))
+                .sort((a, b) => b - a);
+            for (const y of years) {
+                const arr = ELECTION_DATA.lc[y] || [];
+                if (arr.some(d => d.d === electorate)) {
+                    return y;
+                }
+            }
+            return null;
+        }
         
         function updateElectorateDropdown() {
             const electorateSelect = document.getElementById('electorateSelect');
             const currentValue = electorateSelect.value;
-            electorateSelect.innerHTML = '<option value="">All Electorates</option>';
-            
             const year = document.getElementById('yearSelect').value;
-            const data = currentElectionType === 'state' 
-                ? ELECTION_DATA.state[year] 
+            const defaultText = currentElectionType === 'lc'
+                ? `All Contested Electorates (${year})`
+                : 'All Electorates';
+            electorateSelect.innerHTML = `<option value="">${defaultText}</option>`;
+            const data = currentElectionType === 'state'
+                ? ELECTION_DATA.state[year]
                 : ELECTION_DATA.lc[year];
             
             if (!data) return;
             
-            const electorates = [...new Set(data.map(d => d.d))].sort();
+            const electorates = Array.from(new Set(data.map(d => d.d))).sort();
             
             electorates.forEach(elec => {
                 electorateSelect.innerHTML += `<option value="${elec}">${elec}</option>`;
@@ -1111,7 +1167,7 @@ function getPartyColor(party) {
                 }
             });
 
-            const sorted = [...booths].sort();
+            const sorted = Array.from(booths).sort();
             sorted.forEach(booth => {
                 boothSelect.innerHTML += `<option value="${booth}">${booth}</option>`;
             });
@@ -1131,7 +1187,7 @@ function getPartyColor(party) {
             
             const data = getCurrentData(year, 'candidate', electorate, '', '');
             
-            const candidates = [...new Set(data.map(d => d.c))].sort();
+            const candidates = Array.from(new Set(data.map(d => d.c))).sort();
             
             candidates.forEach(cand => {
                 const candidateData = data.find(d => d.c === cand);
@@ -1145,32 +1201,16 @@ function getPartyColor(party) {
         }
         
         function renderStatewideView(container, year) {
-            const seatData = currentElectionType === 'state' && SEAT_RESULTS.state[year] 
-                ? SEAT_RESULTS.state[year] 
+            const seatData = currentElectionType === 'state' && SEAT_RESULTS.state[year]
+                ? SEAT_RESULTS.state[year]
                 : [];
-            
-            container.innerHTML = `
-                <div class="panel-grid">
-                    <div class="panel">
-                        <h2>Party Performance</h2>
-                        <div class="chart-container">
-                            <canvas id="partyChart"></canvas>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Party</th>
-                                        <th>Votes</th>
-                                        <th>Percentage</th>
-                                        <th>Seats Won</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="partyTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
+
+            const seatsHeader = currentElectionType === 'state' ? 'Seats Won' : 'Electorates Won (contested)';
+            const infoIcon = currentElectionType === 'lc'
+                ? '<span class="info-icon" data-tooltip="Legislative Council elections are held by rotation; results shown are for electorates contested in the selected year.">?</span>'
+                : '';
+
+            const seatPanel = currentElectionType === 'state' ? `
                     <div class="panel">
                         <h2>Seat Distribution</h2>
                         <div class="chart-container">
@@ -1190,9 +1230,35 @@ function getPartyColor(party) {
                                 <tbody id="seatTableBody"></tbody>
                             </table>
                         </div>
+                    </div>` : '';
+
+            const summaryTiles = currentElectionType === 'lc' ? `<div id="lcSummary" class="summary-tiles"></div>` : '';
+
+            container.innerHTML = `
+                ${summaryTiles}
+                <div class="panel-grid">
+                    <div class="panel">
+                        <h2>Party Performance ${infoIcon}</h2>
+                        <div class="chart-container">
+                            <canvas id="partyChart"></canvas>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Party</th>
+                                        <th>Votes</th>
+                                        <th>Percentage</th>
+                                        <th>${seatsHeader}</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="partyTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
+                    ${seatPanel}
                 </div>
-                
+
                 <div class="panel full-width">
                     <h2>Booth Winners Map</h2>
                     <div class="booth-filters">
@@ -1228,7 +1294,7 @@ function getPartyColor(party) {
                     </div>
                 </div>
             `;
-            
+
             initializePartyFilter();
             loadStatewideData(year);
             
@@ -2925,11 +2991,13 @@ function createBoothFlipsChart() {
         // Data loading functions
         function loadStatewideData(year) {
             const data = getCurrentData(year, 'state', '', '', '');
-            
+
             // Process party performance
             const partyVotes = {};
             const partyCandidates = {};
-            
+            let physicalVotes = 0;
+            let nonPhysicalVotes = 0;
+
             data.forEach(row => {
                 const party = normalizeParty(row.p || 'IND');
                 if (party !== 'INF') {
@@ -2939,35 +3007,58 @@ function createBoothFlipsChart() {
                     }
                     partyVotes[party] += row.v;
                     partyCandidates[party]++;
+
+                    if (row.b && Array.isArray(row.b)) {
+                        row.b.forEach(booth => {
+                            if (isPhysicalBooth(booth.n)) {
+                                physicalVotes += booth.v;
+                            } else {
+                                nonPhysicalVotes += booth.v;
+                            }
+                        });
+                    }
                 }
             });
-            
+
             // Get seat data
-            const seatData = currentElectionType === 'state' && SEAT_RESULTS.state[year] 
-                ? SEAT_RESULTS.state[year] 
+            const seatData = currentElectionType === 'state' && SEAT_RESULTS.state[year]
+                ? SEAT_RESULTS.state[year]
                 : [];
-            
-            // Aggregate seats by party
+
+            // Aggregate seats or wins by party
             const partySeats = {};
-            seatData.forEach(result => {
-                const normalizedParty = normalizeParty(result.party);
-                if (!partySeats[normalizedParty]) {
-                    partySeats[normalizedParty] = 0;
-                }
-                partySeats[normalizedParty] += result.seats_won;
-            });
-            
+            const partyWins = {};
+            if (currentElectionType === 'state') {
+                seatData.forEach(result => {
+                    const normalizedParty = normalizeParty(result.party);
+                    if (!partySeats[normalizedParty]) {
+                        partySeats[normalizedParty] = 0;
+                    }
+                    partySeats[normalizedParty] += result.seats_won;
+                });
+            } else if (SEAT_RESULTS.lc[year]) {
+                SEAT_RESULTS.lc[year].forEach(result => {
+                    const normalizedParty = normalizeParty(result.winner_party || result.party);
+                    if (!partyWins[normalizedParty]) {
+                        partyWins[normalizedParty] = 0;
+                    }
+                    partyWins[normalizedParty] += 1;
+                });
+            }
+
             // Update party table
             const tbody = document.getElementById('partyTableBody');
             if (tbody) {
                 tbody.innerHTML = '';
                 const totalVotes = Object.values(partyVotes).reduce((a, b) => a + b, 0);
-                
+
                 Object.entries(partyVotes)
                     .sort((a, b) => b[1] - a[1])
                     .forEach(([party, votes]) => {
                         const row = tbody.insertRow();
-                        const seats = partySeats[party] || 0;
+                        const seats = currentElectionType === 'state'
+                            ? (partySeats[party] || 0)
+                            : (partyWins[party] || 0);
                         row.innerHTML = `
                             <td><span class="party-badge" style="background: ${getPartyColor(party)}">${getPartyName(party)}</span></td>
                             <td>${votes.toLocaleString()}</td>
@@ -3001,7 +3092,36 @@ function createBoothFlipsChart() {
                     `;
                 });
             }
-            
+
+            if (currentElectionType === 'lc') {
+                const contested = SEAT_RESULTS.lc[year] ? SEAT_RESULTS.lc[year].length : 0;
+                const winners = Object.entries(partyWins)
+                    .map(([p, c]) => `${getPartyName(p)} ${c}`)
+                    .join(', ');
+                const margins = SEAT_RESULTS.lc[year]
+                    ? SEAT_RESULTS.lc[year].map(r => r.margin_pct).sort((a, b) => a - b)
+                    : [];
+                let medianMargin = 0;
+                if (margins.length > 0) {
+                    const mid = Math.floor(margins.length / 2);
+                    medianMargin = margins.length % 2 !== 0
+                        ? margins[mid]
+                        : (margins[mid - 1] + margins[mid]) / 2;
+                }
+                const nonPhysicalPct = (physicalVotes + nonPhysicalVotes) > 0
+                    ? (nonPhysicalVotes / (physicalVotes + nonPhysicalVotes)) * 100
+                    : 0;
+                const summary = document.getElementById('lcSummary');
+                if (summary) {
+                    summary.innerHTML = `
+                        <div class="summary-tile"><h3>Contested electorates</h3><p>${contested}</p></div>
+                        <div class="summary-tile"><h3>Winners by affiliation</h3><p>${winners}</p></div>
+                        <div class="summary-tile"><h3>Median TCP margin</h3><p>${medianMargin.toFixed(1)}%</p></div>
+                        <div class="summary-tile"><h3>Non-physical vote share</h3><p>${nonPhysicalPct.toFixed(1)}%</p></div>
+                    `;
+                }
+            }
+
             // Update booth winners table
             const boothBody = document.getElementById('boothTableBody');
             if (boothBody) {
@@ -4084,13 +4204,15 @@ const legend = L.control({position: 'bottomright'});
         function initializePartyFilter() {
             const dropdown = document.getElementById('partyFilterDropdown');
             if (!dropdown) return;
-            
+
             while (dropdown.children.length > 1) {
                 dropdown.removeChild(dropdown.lastChild);
             }
-            
-            const parties = ['ALP', 'LIB', 'GRN', 'IND', 'JLN', 'NAT', 'SFF'];
-            
+
+            const year = document.getElementById('yearSelect').value;
+            const data = getCurrentData(year, 'state', '', '', '');
+            const parties = Array.from(new Set(data.map(r => normalizeParty(r.p)).filter(p => p && p !== 'INF'))).sort();
+
             parties.forEach(party => {
                 const option = document.createElement('div');
                 option.className = 'multi-select-option';
