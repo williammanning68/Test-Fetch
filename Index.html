@@ -3650,6 +3650,10 @@ function createBoothFlipsChart() {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
 
+            const percentages = sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0);
+            const maxPercentage = Math.max(...percentages);
+            const yMax = maxPercentage < 60 ? 60 : 100;
+
             if (charts.party) charts.party.destroy();
 
             charts.party = new Chart(ctx.getContext('2d'), {
@@ -3658,7 +3662,7 @@ function createBoothFlipsChart() {
                     labels: sortedParties.map(p => getPartyName(p[0])),
                     datasets: [{
                         label: 'Vote %',
-                        data: sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0),
+                        data: percentages,
                         backgroundColor: sortedParties.map(p => getPartyColor(p[0]))
                     }]
                 },
@@ -3671,7 +3675,7 @@ function createBoothFlipsChart() {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
+                            max: yMax,
                             ticks: {
                                 callback: value => value + '%'
                             }
