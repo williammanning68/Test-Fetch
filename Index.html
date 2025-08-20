@@ -400,6 +400,53 @@
     
 /* Ensure dropdown stays above the map */
 .multi-select-dropdown { z-index: 2000; }
+/* Tooltip styles */
+.info-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    background: var(--federal-gold);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+}
+
+.info-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: normal;
+    width: 250px;
+    font-size: 12px;
+    font-weight: normal;
+    z-index: 1000;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.info-icon:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+}
 </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1758,15 +1805,1065 @@ function getPartyColor(party) {
             }
         }
 function renderHistoricalView(container) {
-            container.innerHTML = `
-                <div class="panel full-width">
-                    <h2>Historical Overview - ${currentElectionType === 'state' ? 'State Elections' : 'Legislative Council'}</h2>
-                    <p style="margin-bottom: 1rem; color: #666;">
-                        Comprehensive analysis of party performance, seat distribution, and electoral dynamics over time
-                    </p>
+    const years = getAvailableYears();
+    if (years.length === 0) {
+        container.innerHTML = `
+            <div class="panel full-width">
+                <h2>Historical Overview</h2>
+                <p style="color: #d32f2f;">No data available for historical analysis</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Build the comprehensive historical view with tooltips
+    container.innerHTML = `
+        <div class="panel full-width">
+            <h2>Historical Overview - ${currentElectionType === 'state' ? 'State Elections' : 'Legislative Council'}</h2>
+            <p style="margin-bottom: 1rem; color: #666;">
+                Comprehensive analysis of party performance, seat distribution, and electoral dynamics over time
+            </p>
+        </div>
+
+        <!-- Statewide Trends -->
+        <div class="panel full-width">
+            <h2>Statewide Trends</h2>
+            <div class="panel-grid">
+                <div>
+                    <h3>First Preference Vote Share Over Time
+                        <span class="info-icon" data-tooltip="Shows the percentage of total first preference votes received by each party across all elections. Calculated as: (Party Votes ÷ Total Valid Votes) × 100">?</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="voteTrendChart"></canvas>
+                    </div>
                 </div>
-            `;
+                ${currentElectionType === 'state' ? `
+                <div>
+                    <h3>Seats Held by Party Over Time
+                        <span class="info-icon" data-tooltip="Total number of seats won by each party in each election. Based on final seat allocation after preference distribution.">?</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="seatTrendChart"></canvas>
+                    </div>
+                </div>
+                ` : '<div></div>'}
+            </div>
+        </div>
+
+        <!-- Year Overview Table -->
+        <div class="panel full-width">
+            <h2>Year-by-Year Summary</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Total Votes</th>
+                            <th>Labor %</th>
+                            <th>Liberal %</th>
+                            <th>Greens %</th>
+                            <th>Independent %</th>
+                            ${currentElectionType === 'state' ? '<th>Total Seats</th>' : ''}
+                            <th>ENP
+                                <span class="info-icon" data-tooltip="Effective Number of Parties: Measures party system fragmentation. Calculated as 1 ÷ Σ(vote share²). Higher values indicate more competitive multi-party system.">?</span>
+                            </th>
+                            <th>Non-Physical %
+                                <span class="info-icon" data-tooltip="Percentage of votes cast through non-physical methods including postal votes, pre-poll votes, mobile booths, and provisional votes.">?</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="yearOverviewBody">
+                        <tr><td colspan="${currentElectionType === 'state' ? 9 : 8}">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Party Performance Metrics -->
+        <div class="panel full-width">
+            <h2>Party Performance Extremes
+                <span class="info-icon" data-tooltip="Shows the highest and lowest vote share percentages achieved by each party across all elections in the dataset.">?</span>
+            </h2>
+            <div class="panel-grid">
+                <div>
+                    <h3>Best Performances</h3>
+                    <div class="table-container small">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Party</th>
+                                    <th>Best %</th>
+                                    <th>Year</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partyBestBody">
+                                <tr><td colspan="3">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h3>Worst Performances</h3>
+                    <div class="table-container small">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Party</th>
+                                    <th>Worst %</th>
+                                    <th>Year</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partyWorstBody">
+                                <tr><td colspan="3">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Electorate-Level Analysis -->
+        <div class="panel full-width">
+            <h2>Electorate-Level Trends</h2>
+            <div style="margin-bottom: 1rem;">
+                <label style="margin-right: 1rem;">Select Electorate: </label>
+                <select id="historicalElectorateSelect" onchange="updateHistoricalElectorateCharts()">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="panel-grid">
+                <div>
+                    <h3>Party Vote Share by Electorate</h3>
+                    <div class="chart-container">
+                        <canvas id="electorateVoteTrendChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Electorate Stability Index
+                        <span class="info-icon" data-tooltip="Volatility score measures average absolute swing in party vote shares between consecutive elections. Lower values indicate more stable voting patterns. Green: stable (<3), Orange: moderate (3-5), Red: volatile (>5).">?</span>
+                    </h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Electorate</th>
+                                    <th>Volatility</th>
+                                    <th>Leading Party</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody id="electorateStabilityBody">
+                                <tr><td colspan="4">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Swing Analysis -->
+        <div class="panel full-width">
+            <h2>Swing Analysis
+                <span class="info-icon" data-tooltip="Calculates the change in party vote share between two elections. Swing = (Party % in Year 2) - (Party % in Year 1). Positive values indicate gains, negative values indicate losses.">?</span>
+            </h2>
+            <div style="margin-bottom: 1rem;">
+                <label style="margin-right: 1rem;">Compare Years: </label>
+                <select id="swingFromYear" onchange="updateSwingAnalysis()">
+                    <option value="">From Year</option>
+                </select>
+                <span style="margin: 0 1rem;">→</span>
+                <select id="swingToYear" onchange="updateSwingAnalysis()">
+                    <option value="">To Year</option>
+                </select>
+                <label style="margin-left: 2rem;">Party: </label>
+                <select id="swingParty" onchange="updateSwingAnalysis()">
+                    <option value="ALP">Labor</option>
+                    <option value="LIB">Liberal</option>
+                    <option value="GRN">Greens</option>
+                    <option value="IND">Independent</option>
+                </select>
+            </div>
+            <div class="panel-grid">
+                <div>
+                    <h3>Top 10 Positive Swings</h3>
+                    <div class="table-container small">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Electorate</th>
+                                    <th>Swing</th>
+                                    <th>Final %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topSwingsBody">
+                                <tr><td colspan="3">Select years to compare</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h3>Top 10 Negative Swings</h3>
+                    <div class="table-container small">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Electorate</th>
+                                    <th>Swing</th>
+                                    <th>Final %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bottomSwingsBody">
+                                <tr><td colspan="3">Select years to compare</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booth-Level Historical Insights -->
+        <div class="panel full-width">
+            <h2>Booth-Level Historical Insights</h2>
+            <div class="panel-grid">
+                <div>
+                    <h3>Share of Booths Won by Party
+                        <span class="info-icon" data-tooltip="Percentage of physical polling booths where each party received the most votes. Excludes postal and pre-poll votes. Based on primary vote totals at each booth.">?</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="boothShareChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3>Non-Physical vs Physical Vote Share
+                        <span class="info-icon" data-tooltip="Tracks the proportion of votes cast at physical polling booths versus alternative methods (postal, pre-poll, mobile, provisional) over time.">?</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="voteTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booth Flips Timeline -->
+        <div class="panel full-width">
+            <h2>Booth Flips Over Time
+                <span class="info-icon" data-tooltip="Shows polling booths where the winning party changed between consecutive elections. A 'flip' occurs when the party with the most votes at a booth differs from the previous election.">?</span>
+            </h2>
+            <div class="chart-container">
+                <canvas id="boothFlipsChart"></canvas>
+            </div>
+            <div class="table-container" style="margin-top: 1rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transition</th>
+                            <th>Total Flips</th>
+                            <th>To Labor</th>
+                            <th>To Liberal</th>
+                            <th>To Greens</th>
+                            <th>To Independent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="boothFlipsTableBody">
+                        <tr><td colspan="6">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // Load all historical data
+    loadHistoricalData();
+}
+// Historical data functions
+function loadHistoricalData() {
+    const years = getAvailableYears();
+    
+    // Populate year selectors
+    const swingFromSelect = document.getElementById('swingFromYear');
+    const swingToSelect = document.getElementById('swingToYear');
+    if (swingFromSelect && swingToSelect) {
+        swingFromSelect.innerHTML = '<option value="">From Year</option>';
+        swingToSelect.innerHTML = '<option value="">To Year</option>';
+        years.forEach(year => {
+            swingFromSelect.innerHTML += `<option value="${year}">${year}</option>`;
+            swingToSelect.innerHTML += `<option value="${year}">${year}</option>`;
+        });
+    }
+    
+    // Populate electorate selector
+    const electorateSelect = document.getElementById('historicalElectorateSelect');
+    if (electorateSelect) {
+        const allElectorates = new Set();
+        years.forEach(year => {
+            const data = currentElectionType === 'state' 
+                ? ELECTION_DATA.state[year] 
+                : ELECTION_DATA.lc[year];
+            if (data) {
+                data.forEach(d => allElectorates.add(d.d));
+            }
+        });
+        electorateSelect.innerHTML = '<option value="">All Electorates</option>';
+        [...allElectorates].sort().forEach(elec => {
+            electorateSelect.innerHTML += `<option value="${elec}">${elec}</option>`;
+        });
+    }
+    
+    // Load all trend data
+    createVoteTrendChart();
+    if (currentElectionType === 'state') {
+        createSeatTrendChart();
+    }
+    createYearOverviewTable();
+    createPartyExtremesTable();
+    createElectorateStabilityTable();
+    createBoothShareChart();
+    createVoteTypeChart();
+    createBoothFlipsChart();
+    updateHistoricalElectorateCharts();
+}
+
+function createVoteTrendChart() {
+    const ctx = document.getElementById('voteTrendChart');
+    if (!ctx) return;
+    
+    const years = getAvailableYears();
+    const partyData = {};
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    
+    parties.forEach(party => {
+        partyData[party] = [];
+    });
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        const partyVotes = {};
+        let totalVotes = 0;
+        
+        data.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') {
+                if (!partyVotes[party]) partyVotes[party] = 0;
+                partyVotes[party] += row.v;
+                totalVotes += row.v;
+            }
+        });
+        
+        parties.forEach(party => {
+            const votes = partyVotes[party] || 0;
+            const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+            partyData[party].push(percentage);
+        });
+    });
+    
+    if (charts.voteTrend) charts.voteTrend.destroy();
+    
+    charts.voteTrend = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: parties.map(party => ({
+                label: getPartyName(party),
+                data: partyData[party],
+                borderColor: getPartyColor(party),
+                backgroundColor: getPartyColor(party) + '20',
+                tension: 0.2
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: value => value + '%' }
+                }
+            }
         }
+    });
+}
+
+function createSeatTrendChart() {
+    const ctx = document.getElementById('seatTrendChart');
+    if (!ctx) return;
+    
+    const years = getAvailableYears();
+    const partySeats = {};
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    
+    parties.forEach(party => {
+        partySeats[party] = [];
+    });
+    
+    years.forEach(year => {
+        const seatData = SEAT_RESULTS.state[year] || [];
+        const yearSeats = {};
+        
+        seatData.forEach(result => {
+            const party = normalizeParty(result.party);
+            if (!yearSeats[party]) yearSeats[party] = 0;
+            yearSeats[party] += result.seats_won;
+        });
+        
+        parties.forEach(party => {
+            partySeats[party].push(yearSeats[party] || 0);
+        });
+    });
+    
+    if (charts.seatTrend) charts.seatTrend.destroy();
+    
+    charts.seatTrend = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: parties.map(party => ({
+                label: getPartyName(party),
+                data: partySeats[party],
+                borderColor: getPartyColor(party),
+                backgroundColor: getPartyColor(party) + '20',
+                tension: 0.2
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+}
+
+function createYearOverviewTable() {
+    const tbody = document.getElementById('yearOverviewBody');
+    if (!tbody) return;
+    
+    const years = getAvailableYears();
+    tbody.innerHTML = '';
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        const partyVotes = {};
+        let totalVotes = 0;
+        let nonPhysicalVotes = 0;
+        
+        data.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') {
+                if (!partyVotes[party]) partyVotes[party] = 0;
+                partyVotes[party] += row.v;
+                totalVotes += row.v;
+                
+                // Calculate non-physical votes
+                if (row.b && Array.isArray(row.b)) {
+                    row.b.forEach(booth => {
+                        if (!isPhysicalBooth(booth.n)) {
+                            nonPhysicalVotes += booth.v;
+                        }
+                    });
+                }
+            }
+        });
+        
+        // Calculate ENP (Effective Number of Parties)
+        const shares = Object.values(partyVotes).map(v => v / totalVotes);
+        const enp = 1 / shares.reduce((sum, s) => sum + s * s, 0);
+        
+        // Get seat count for state elections
+        let totalSeats = 0;
+        if (currentElectionType === 'state') {
+            const seatData = SEAT_RESULTS.state[year] || [];
+            totalSeats = seatData.reduce((sum, r) => sum + r.seats_won, 0);
+        }
+        
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${year}</td>
+            <td>${totalVotes.toLocaleString()}</td>
+            <td>${((partyVotes['ALP'] || 0) / totalVotes * 100).toFixed(1)}%</td>
+            <td>${((partyVotes['LIB'] || 0) / totalVotes * 100).toFixed(1)}%</td>
+            <td>${((partyVotes['GRN'] || 0) / totalVotes * 100).toFixed(1)}%</td>
+            <td>${((partyVotes['IND'] || 0) / totalVotes * 100).toFixed(1)}%</td>
+            ${currentElectionType === 'state' ? `<td>${totalSeats}</td>` : ''}
+            <td>${enp.toFixed(2)}</td>
+            <td>${(nonPhysicalVotes / totalVotes * 100).toFixed(1)}%</td>
+        `;
+    });
+}
+
+function createPartyExtremesTable() {
+    const bestBody = document.getElementById('partyBestBody');
+    const worstBody = document.getElementById('partyWorstBody');
+    if (!bestBody || !worstBody) return;
+    
+    const years = getAvailableYears();
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    const partyPerformances = {};
+    
+    parties.forEach(party => {
+        partyPerformances[party] = [];
+    });
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        const partyVotes = {};
+        let totalVotes = 0;
+        
+        data.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') {
+                if (!partyVotes[party]) partyVotes[party] = 0;
+                partyVotes[party] += row.v;
+                totalVotes += row.v;
+            }
+        });
+        
+        parties.forEach(party => {
+            const percentage = totalVotes > 0 ? (partyVotes[party] || 0) / totalVotes * 100 : 0;
+            partyPerformances[party].push({ year, percentage });
+        });
+    });
+    
+    bestBody.innerHTML = '';
+    worstBody.innerHTML = '';
+    
+    parties.forEach(party => {
+        const performances = partyPerformances[party];
+        if (performances.length === 0) return;
+        
+        const sorted = [...performances].sort((a, b) => b.percentage - a.percentage);
+        const best = sorted[0];
+        const worst = sorted[sorted.length - 1];
+        
+        const bestRow = bestBody.insertRow();
+        bestRow.innerHTML = `
+            <td><span class="party-badge" style="background: ${getPartyColor(party)}">${getPartyName(party)}</span></td>
+            <td>${best.percentage.toFixed(1)}%</td>
+            <td>${best.year}</td>
+        `;
+        
+        const worstRow = worstBody.insertRow();
+        worstRow.innerHTML = `
+            <td><span class="party-badge" style="background: ${getPartyColor(party)}">${getPartyName(party)}</span></td>
+            <td>${worst.percentage.toFixed(1)}%</td>
+            <td>${worst.year}</td>
+        `;
+    });
+}
+
+function createElectorateStabilityTable() {
+    const tbody = document.getElementById('electorateStabilityBody');
+    if (!tbody) return;
+    
+    const years = getAvailableYears();
+    const electorateData = {};
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        const electorates = {};
+        data.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') {
+                if (!electorates[row.d]) {
+                    electorates[row.d] = {};
+                }
+                if (!electorates[row.d][party]) {
+                    electorates[row.d][party] = 0;
+                }
+                electorates[row.d][party] += row.v;
+            }
+        });
+        
+        Object.entries(electorates).forEach(([elec, partyVotes]) => {
+            if (!electorateData[elec]) {
+                electorateData[elec] = [];
+            }
+            const total = Object.values(partyVotes).reduce((sum, v) => sum + v, 0);
+            const shares = {};
+            Object.entries(partyVotes).forEach(([party, votes]) => {
+                shares[party] = (votes / total * 100);
+            });
+            electorateData[elec].push({ year, shares });
+        });
+    });
+    
+    // Calculate volatility for each electorate
+    const volatilityData = [];
+    Object.entries(electorateData).forEach(([elec, yearData]) => {
+        if (yearData.length < 2) return;
+        
+        let totalSwing = 0;
+        let swingCount = 0;
+        
+        for (let i = 1; i < yearData.length; i++) {
+            const prev = yearData[i - 1].shares;
+            const curr = yearData[i].shares;
+            const parties = new Set([...Object.keys(prev), ...Object.keys(curr)]);
+            
+            parties.forEach(party => {
+                const prevShare = prev[party] || 0;
+                const currShare = curr[party] || 0;
+                totalSwing += Math.abs(currShare - prevShare);
+                swingCount++;
+            });
+        }
+        
+        const avgVolatility = swingCount > 0 ? totalSwing / swingCount : 0;
+        
+        // Find leading party (most recent year)
+        const latest = yearData[yearData.length - 1].shares;
+        let leadingParty = '';
+        let maxShare = 0;
+        Object.entries(latest).forEach(([party, share]) => {
+            if (share > maxShare) {
+                maxShare = share;
+                leadingParty = party;
+            }
+        });
+        
+        volatilityData.push({
+            electorate: elec,
+            volatility: avgVolatility,
+            leadingParty,
+            trend: yearData
+        });
+    });
+    
+    // Sort by volatility
+    volatilityData.sort((a, b) => b.volatility - a.volatility);
+    
+    tbody.innerHTML = '';
+    volatilityData.slice(0, 10).forEach(data => {
+        const row = tbody.insertRow();
+        const volatilityClass = data.volatility > 5 ? 'color: red' : data.volatility > 3 ? 'color: orange' : 'color: green';
+        row.innerHTML = `
+            <td>${data.electorate}</td>
+            <td style="${volatilityClass}">${data.volatility.toFixed(2)}</td>
+            <td><span class="party-badge" style="background: ${getPartyColor(data.leadingParty)}">${getPartyName(data.leadingParty)}</span></td>
+            <td>📊</td>
+        `;
+    });
+}
+
+function updateHistoricalElectorateCharts() {
+    const electorate = document.getElementById('historicalElectorateSelect').value;
+    const ctx = document.getElementById('electorateVoteTrendChart');
+    if (!ctx) return;
+    
+    const years = getAvailableYears();
+    const partyData = {};
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    
+    parties.forEach(party => {
+        partyData[party] = [];
+    });
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        const filteredData = electorate 
+            ? data.filter(d => d.d === electorate)
+            : data;
+        
+        const partyVotes = {};
+        let totalVotes = 0;
+        
+        filteredData.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') {
+                if (!partyVotes[party]) partyVotes[party] = 0;
+                partyVotes[party] += row.v;
+                totalVotes += row.v;
+            }
+        });
+        
+        parties.forEach(party => {
+            const votes = partyVotes[party] || 0;
+            const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+            partyData[party].push(percentage);
+        });
+    });
+    
+    if (charts.electorateVoteTrend) charts.electorateVoteTrend.destroy();
+    
+    charts.electorateVoteTrend = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: parties.map(party => ({
+                label: getPartyName(party),
+                data: partyData[party],
+                borderColor: getPartyColor(party),
+                backgroundColor: getPartyColor(party) + '20',
+                tension: 0.2
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: {
+                    display: true,
+                    text: electorate || 'All Electorates'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: value => value + '%' }
+                }
+            }
+        }
+    });
+}
+
+function updateSwingAnalysis() {
+    const fromYear = parseInt(document.getElementById('swingFromYear').value);
+    const toYear = parseInt(document.getElementById('swingToYear').value);
+    const party = document.getElementById('swingParty').value;
+    
+    if (!fromYear || !toYear || fromYear >= toYear) {
+        document.getElementById('topSwingsBody').innerHTML = '<tr><td colspan="3">Select valid year range</td></tr>';
+        document.getElementById('bottomSwingsBody').innerHTML = '<tr><td colspan="3">Select valid year range</td></tr>';
+        return;
+    }
+    
+    const fromData = currentElectionType === 'state' 
+        ? ELECTION_DATA.state[fromYear] 
+        : ELECTION_DATA.lc[fromYear];
+    const toData = currentElectionType === 'state' 
+        ? ELECTION_DATA.state[toYear] 
+        : ELECTION_DATA.lc[toYear];
+    
+    if (!fromData || !toData) return;
+    
+    // Calculate swings by electorate
+    const electorateSwings = [];
+    const electorates = new Set();
+    
+    fromData.forEach(d => electorates.add(d.d));
+    toData.forEach(d => electorates.add(d.d));
+    
+    electorates.forEach(elec => {
+        const fromElecData = fromData.filter(d => d.d === elec);
+        const toElecData = toData.filter(d => d.d === elec);
+        
+        if (fromElecData.length === 0 || toElecData.length === 0) return;
+        
+        // Calculate party shares for both years
+        const fromVotes = {};
+        let fromTotal = 0;
+        fromElecData.forEach(row => {
+            const p = normalizeParty(row.p);
+            if (p !== 'INF') {
+                if (!fromVotes[p]) fromVotes[p] = 0;
+                fromVotes[p] += row.v;
+                fromTotal += row.v;
+            }
+        });
+        
+        const toVotes = {};
+        let toTotal = 0;
+        toElecData.forEach(row => {
+            const p = normalizeParty(row.p);
+            if (p !== 'INF') {
+                if (!toVotes[p]) toVotes[p] = 0;
+                toVotes[p] += row.v;
+                toTotal += row.v;
+            }
+        });
+        
+        const fromShare = fromTotal > 0 ? (fromVotes[party] || 0) / fromTotal * 100 : 0;
+        const toShare = toTotal > 0 ? (toVotes[party] || 0) / toTotal * 100 : 0;
+        const swing = toShare - fromShare;
+        
+        electorateSwings.push({
+            electorate: elec,
+            swing,
+            finalShare: toShare
+        });
+    });
+    
+    // Sort and display
+    electorateSwings.sort((a, b) => b.swing - a.swing);
+    
+    const topBody = document.getElementById('topSwingsBody');
+    const bottomBody = document.getElementById('bottomSwingsBody');
+    
+    topBody.innerHTML = '';
+    electorateSwings.slice(0, 10).forEach(data => {
+        const row = topBody.insertRow();
+        row.innerHTML = `
+            <td>${data.electorate}</td>
+            <td style="color: green">+${data.swing.toFixed(2)}pp</td>
+            <td>${data.finalShare.toFixed(1)}%</td>
+        `;
+    });
+    
+    bottomBody.innerHTML = '';
+    electorateSwings.slice(-10).reverse().forEach(data => {
+        const row = bottomBody.insertRow();
+        row.innerHTML = `
+            <td>${data.electorate}</td>
+            <td style="color: red">${data.swing.toFixed(2)}pp</td>
+            <td>${data.finalShare.toFixed(1)}%</td>
+        `;
+    });
+}
+
+function createBoothShareChart() {
+    const ctx = document.getElementById('boothShareChart');
+    if (!ctx) return;
+    
+    const years = getAvailableYears();
+    const partyData = {};
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    
+    parties.forEach(party => {
+        partyData[party] = [];
+    });
+    
+    years.forEach(year => {
+        const boothWinners = calculateBoothWinners(year, '');
+        const totalBooths = boothWinners.length;
+        
+        const partyBooths = {};
+        parties.forEach(p => partyBooths[p] = 0);
+        
+        boothWinners.forEach(booth => {
+            const party = normalizeParty(booth.party);
+            if (partyBooths[party] !== undefined) {
+                partyBooths[party]++;
+            }
+        });
+        
+        parties.forEach(party => {
+            const percentage = totalBooths > 0 ? (partyBooths[party] / totalBooths * 100) : 0;
+            partyData[party].push(percentage);
+        });
+    });
+    
+    if (charts.boothShare) charts.boothShare.destroy();
+    
+    charts.boothShare = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: years,
+            datasets: parties.map(party => ({
+                label: getPartyName(party),
+                data: partyData[party],
+                backgroundColor: getPartyColor(party)
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { 
+                    stacked: true,
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: value => value + '%' }
+                }
+            }
+        }
+    });
+}
+
+function createVoteTypeChart() {
+    const ctx = document.getElementById('voteTypeChart');
+    if (!ctx) return;
+    
+    const years = getAvailableYears();
+    const physicalData = [];
+    const nonPhysicalData = [];
+    
+    years.forEach(year => {
+        const data = currentElectionType === 'state' 
+            ? ELECTION_DATA.state[year] 
+            : ELECTION_DATA.lc[year];
+        
+        if (!data) return;
+        
+        let physicalVotes = 0;
+        let nonPhysicalVotes = 0;
+        
+        data.forEach(row => {
+            if (row.b && Array.isArray(row.b)) {
+                row.b.forEach(booth => {
+                    if (isPhysicalBooth(booth.n)) {
+                        physicalVotes += booth.v;
+                    } else {
+                        nonPhysicalVotes += booth.v;
+                    }
+                });
+            }
+        });
+        
+        const total = physicalVotes + nonPhysicalVotes;
+        physicalData.push(total > 0 ? (physicalVotes / total * 100) : 0);
+        nonPhysicalData.push(total > 0 ? (nonPhysicalVotes / total * 100) : 0);
+    });
+    
+    if (charts.voteType) charts.voteType.destroy();
+    
+    charts.voteType = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Physical Booths',
+                    data: physicalData,
+                    borderColor: '#4A5A6A',
+                    backgroundColor: '#4A5A6A20',
+                    tension: 0.2
+                },
+                {
+                    label: 'Non-Physical (Postal, Pre-poll, etc.)',
+                    data: nonPhysicalData,
+                    borderColor: '#C5A572',
+                    backgroundColor: '#C5A57220',
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: value => value + '%' }
+                }
+            }
+        }
+    });
+}
+
+function createBoothFlipsChart() {
+    const ctx = document.getElementById('boothFlipsChart');
+    const tbody = document.getElementById('boothFlipsTableBody');
+    if (!ctx || !tbody) return;
+    
+    const years = getAvailableYears();
+    const transitions = [];
+    const flipsData = [];
+    
+    for (let i = 1; i < years.length; i++) {
+        const prevYear = years[i - 1];
+        const currYear = years[i];
+        const transition = `${prevYear}→${currYear}`;
+        transitions.push(transition);
+        
+        const shifts = computeBoothRankShifts(currYear, prevYear, '');
+        
+        // Count flips by destination party
+        const flipsByParty = {};
+        shifts.topChanges.forEach(change => {
+            const toParty = normalizeParty(change.currTop);
+            if (!flipsByParty[toParty]) flipsByParty[toParty] = 0;
+            flipsByParty[toParty]++;
+        });
+        
+        flipsData.push({
+            transition,
+            total: shifts.topChanges.length,
+            byParty: flipsByParty
+        });
+    }
+    
+    // Create stacked bar chart
+    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    const datasets = parties.map(party => ({
+        label: getPartyName(party),
+        data: flipsData.map(d => d.byParty[party] || 0),
+        backgroundColor: getPartyColor(party)
+    }));
+    
+    if (charts.boothFlips) charts.boothFlips.destroy();
+    
+    charts.boothFlips = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: transitions,
+            datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { 
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+    
+    // Update table
+    tbody.innerHTML = '';
+    flipsData.forEach(data => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${data.transition}</td>
+            <td>${data.total}</td>
+            <td>${data.byParty['ALP'] || 0}</td>
+            <td>${data.byParty['LIB'] || 0}</td>
+            <td>${data.byParty['GRN'] || 0}</td>
+            <td>${data.byParty['IND'] || 0}</td>
+        `;
+    });
+}
         
         // Data loading functions
         function loadStatewideData(year) {
