@@ -1494,6 +1494,10 @@ function getPartyColor(party) {
             
             <div style="margin-top: 1.5rem;">
                 <h3>Booth Map - Candidate Performance</h3>
+                <div id="boothMapToggle" style="margin: 0.25rem 0 0.5rem 0; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button id="boothShareBtn" class="active" title="Color booths by vote share">Share %</button>
+                    <button id="boothVotesBtn" title="Color booths by raw votes">Votes</button>
+                </div>
                 <div id="boothMap"></div>
             </div>
         </div>
@@ -3486,7 +3490,22 @@ function createBoothFlipsChart() {
 
             createCandidateTrendChart(candidate, electorate);
             createDistributionChart(boothStats);
-            createCandidateBoothMap(boothStats, electorate);
+            createCandidateBoothMap(boothStats, electorate, 'share');
+
+            const shareBtn = document.getElementById('boothShareBtn');
+            const votesBtn = document.getElementById('boothVotesBtn');
+            if (shareBtn && votesBtn) {
+                shareBtn.onclick = () => {
+                    shareBtn.classList.add('active');
+                    votesBtn.classList.remove('active');
+                    createCandidateBoothMap(boothStats, electorate, 'share');
+                };
+                votesBtn.onclick = () => {
+                    votesBtn.classList.add('active');
+                    shareBtn.classList.remove('active');
+                    createCandidateBoothMap(boothStats, electorate, 'votes');
+                };
+            }
         }
 
         function createCandidateTrendChart(candidate, electorate) {
@@ -3585,7 +3604,7 @@ function createBoothFlipsChart() {
             });
         }
 
-        function createCandidateBoothMap(boothStats, electorate) {
+        function createCandidateBoothMap(boothStats, electorate, mode = 'share') {
             if (boothMap) {
                 boothMap.remove();
             }
@@ -3594,15 +3613,15 @@ function createBoothFlipsChart() {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(boothMap);
             mapMarkers = L.layerGroup().addTo(boothMap);
-
-            const percentages = boothStats.map(b => b.percentage);
-            const maxPct = Math.max(...percentages);
-            const minPct = Math.min(...percentages);
+            const values = boothStats.map(b => mode === 'votes' ? b.votes : b.percentage);
+            const maxVal = Math.max(...values);
+            const minVal = Math.min(...values);
 
             boothStats.forEach(booth => {
                 const coords = POLLING_PLACES[booth.name] || POLLING_PLACES[keyForBooth(booth.name)];
                 if (coords && coords.lat && coords.lng) {
-                    const intensity = (booth.percentage - minPct) / (maxPct - minPct);
+                    const boothValue = mode === 'votes' ? booth.votes : booth.percentage;
+                    const intensity = (boothValue - minVal) / (maxVal - minVal || 1);
                     const color = `hsl(${120 * intensity}, 70%, 50%)`;
                     const icon = L.divIcon({
                         className: 'custom-div-icon',
@@ -3625,12 +3644,15 @@ function createBoothFlipsChart() {
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function(map) {
                 const div = L.DomUtil.create('div', 'map-legend');
+                const title = mode === 'votes' ? 'Vote Scale' : 'Performance Scale';
+                const minLabel = mode === 'votes' ? minVal.toLocaleString() : `${minVal.toFixed(1)}%`;
+                const maxLabel = mode === 'votes' ? maxVal.toLocaleString() : `${maxVal.toFixed(1)}%`;
                 div.innerHTML = `
-            <h4>Performance Scale</h4>
+            <h4>${title}</h4>
             <div style="background: linear-gradient(to right, hsl(0, 70%, 50%), hsl(60, 70%, 50%), hsl(120, 70%, 50%)); height: 20px; margin: 5px 0;"></div>
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>${minPct.toFixed(1)}%</span>
-                <span>${maxPct.toFixed(1)}%</span>
+                <span>${minLabel}</span>
+                <span>${maxLabel}</span>
             </div>`;
                 return div;
             };
