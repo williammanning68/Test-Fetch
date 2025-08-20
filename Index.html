@@ -670,6 +670,10 @@
             };
             return map[s] || s;
         }
+
+        function normalizeCandidateName(name) {
+            return (name || "").toString().trim().toUpperCase();
+        }
         
 function getPartyColor(party) {
             const colorMap = {
@@ -2091,10 +2095,12 @@ function renderHistoricalView(container) {
             const partyTotalVotes = partyCandidates.reduce((sum, c) => sum + c.v, 0);
             const partyShare = partyTotalVotes > 0 ? (totalVotes / partyTotalVotes * 100).toFixed(1) : 0;
 
+            const candidateNorm = normalizeCandidateName(candidate);
+
             const sortedCandidates = [...electorateData].sort((a, b) => b.v - a.v);
-            const overallRank = sortedCandidates.findIndex(c => c.c === candidate) + 1;
+            const overallRank = sortedCandidates.findIndex(c => normalizeCandidateName(c.c) === candidateNorm) + 1;
             const sortedParty = partyCandidates.sort((a, b) => b.v - a.v);
-            const partyRank = sortedParty.findIndex(c => c.c === candidate) + 1;
+            const partyRank = sortedParty.findIndex(c => normalizeCandidateName(c.c) === candidateNorm) + 1;
 
             document.getElementById('primaryVotes').textContent = totalVotes.toLocaleString();
             document.getElementById('primaryPercent').textContent = `${primaryPercent}% of electorate`;
@@ -2127,7 +2133,7 @@ function renderHistoricalView(container) {
             if (prevYear) {
                 const prevYearData = currentElectionType === 'state' ? ELECTION_DATA.state[prevYear] : ELECTION_DATA.lc[prevYear];
                 if (prevYearData) {
-                    prevData = prevYearData.find(c => c.c === candidate && c.d === electorate);
+                    prevData = prevYearData.find(c => normalizeCandidateName(c.c) === candidateNorm && c.d === electorate);
                     prevElectorateData = prevYearData.filter(c => c.d === electorate);
                     if (prevData) {
                         const prevTotal = prevElectorateData.reduce((sum, c) => sum + c.v, 0);
@@ -2142,7 +2148,7 @@ function renderHistoricalView(container) {
                 if (prevData && swing !== null) {
                     const prevTotal = prevElectorateData.reduce((sum, c) => sum + c.v, 0);
                     const prevPercent = (prevData.v / prevTotal * 100).toFixed(2);
-                    const prevRank = [...prevElectorateData].sort((a, b) => b.v - a.v).findIndex(c => c.c === candidate) + 1;
+                    const prevRank = [...prevElectorateData].sort((a, b) => b.v - a.v).findIndex(c => normalizeCandidateName(c.c) === candidateNorm) + 1;
                     const rankChange = prevRank - overallRank;
 
                     histBody.innerHTML = `
@@ -2278,10 +2284,12 @@ function renderHistoricalView(container) {
             const years = getAvailableYears();
             const trendData = [];
 
+            const target = normalizeCandidateName(candidate);
+
             years.forEach(year => {
                 const yearData = currentElectionType === 'state' ? ELECTION_DATA.state[year] : ELECTION_DATA.lc[year];
                 if (yearData) {
-                    const candData = yearData.find(c => c.c === candidate && c.d === electorate);
+                    const candData = yearData.find(c => normalizeCandidateName(c.c) === target && c.d === electorate);
                     if (candData) {
                         const elecData = yearData.filter(c => c.d === electorate);
                         const total = elecData.reduce((sum, c) => sum + c.v, 0);
