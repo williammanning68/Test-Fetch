@@ -2130,22 +2130,32 @@ function createVoteTrendChart() {
     
     const years = getAvailableYears();
     const partyData = {};
-    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
-    
-    parties.forEach(party => {
-        partyData[party] = [];
-    });
-    
+    const partySet = new Set();
+
     years.forEach(year => {
-        const data = currentElectionType === 'state' 
-            ? ELECTION_DATA.state[year] 
+        const data = currentElectionType === 'state'
+            ? ELECTION_DATA.state[year]
             : ELECTION_DATA.lc[year];
-        
         if (!data) return;
-        
+        data.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') partySet.add(party);
+        });
+    });
+
+    const parties = Array.from(partySet).sort();
+    parties.forEach(party => { partyData[party] = []; });
+
+    years.forEach(year => {
+        const data = currentElectionType === 'state'
+            ? ELECTION_DATA.state[year]
+            : ELECTION_DATA.lc[year];
+
+        if (!data) return;
+
         const partyVotes = {};
         let totalVotes = 0;
-        
+
         data.forEach(row => {
             const party = normalizeParty(row.p);
             if (party !== 'INF') {
@@ -2154,7 +2164,7 @@ function createVoteTrendChart() {
                 totalVotes += row.v;
             }
         });
-        
+
         parties.forEach(party => {
             const votes = partyVotes[party] || 0;
             const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
@@ -2180,7 +2190,7 @@ function createVoteTrendChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: { display: false }
             },
             scales: {
                 y: {
@@ -2199,22 +2209,29 @@ function createSeatTrendChart() {
     
     const years = getAvailableYears();
     const partySeats = {};
-    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
-    
-    parties.forEach(party => {
-        partySeats[party] = [];
+    const partySet = new Set();
+
+    years.forEach(year => {
+        const seatData = SEAT_RESULTS.state[year] || [];
+        seatData.forEach(result => {
+            const party = normalizeParty(result.party);
+            partySet.add(party);
+        });
     });
-    
+
+    const parties = Array.from(partySet).sort();
+    parties.forEach(party => { partySeats[party] = []; });
+
     years.forEach(year => {
         const seatData = SEAT_RESULTS.state[year] || [];
         const yearSeats = {};
-        
+
         seatData.forEach(result => {
             const party = normalizeParty(result.party);
             if (!yearSeats[party]) yearSeats[party] = 0;
             yearSeats[party] += result.seats_won;
         });
-        
+
         parties.forEach(party => {
             partySeats[party].push(yearSeats[party] || 0);
         });
@@ -2238,7 +2255,7 @@ function createSeatTrendChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: { display: false }
             },
             scales: {
                 y: {
@@ -2483,26 +2500,42 @@ function updateHistoricalElectorateCharts() {
     
     const years = getAvailableYears();
     const partyData = {};
-    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
-    
-    parties.forEach(party => {
-        partyData[party] = [];
-    });
-    
+    const partySet = new Set();
+
     years.forEach(year => {
-        const data = currentElectionType === 'state' 
-            ? ELECTION_DATA.state[year] 
+        const data = currentElectionType === 'state'
+            ? ELECTION_DATA.state[year]
             : ELECTION_DATA.lc[year];
-        
+
         if (!data) return;
-        
-        const filteredData = electorate 
+
+        const filteredData = electorate
             ? data.filter(d => d.d === electorate)
             : data;
-        
+
+        filteredData.forEach(row => {
+            const party = normalizeParty(row.p);
+            if (party !== 'INF') partySet.add(party);
+        });
+    });
+
+    const parties = Array.from(partySet).sort();
+    parties.forEach(party => { partyData[party] = []; });
+
+    years.forEach(year => {
+        const data = currentElectionType === 'state'
+            ? ELECTION_DATA.state[year]
+            : ELECTION_DATA.lc[year];
+
+        if (!data) return;
+
+        const filteredData = electorate
+            ? data.filter(d => d.d === electorate)
+            : data;
+
         const partyVotes = {};
         let totalVotes = 0;
-        
+
         filteredData.forEach(row => {
             const party = normalizeParty(row.p);
             if (party !== 'INF') {
@@ -2511,7 +2544,7 @@ function updateHistoricalElectorateCharts() {
                 totalVotes += row.v;
             }
         });
-        
+
         parties.forEach(party => {
             const votes = partyVotes[party] || 0;
             const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
@@ -2537,7 +2570,7 @@ function updateHistoricalElectorateCharts() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' },
+                legend: { display: false },
                 title: {
                     display: true,
                     text: electorate || 'All Electorates'
@@ -2654,26 +2687,33 @@ function createBoothShareChart() {
     
     const years = getAvailableYears();
     const partyData = {};
-    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
-    
-    parties.forEach(party => {
-        partyData[party] = [];
+    const partySet = new Set();
+
+    years.forEach(year => {
+        const boothWinners = calculateBoothWinners(year, '');
+        boothWinners.forEach(booth => {
+            const party = normalizeParty(booth.party);
+            partySet.add(party);
+        });
     });
-    
+
+    const parties = Array.from(partySet).sort();
+    parties.forEach(party => { partyData[party] = []; });
+
     years.forEach(year => {
         const boothWinners = calculateBoothWinners(year, '');
         const totalBooths = boothWinners.length;
-        
+
         const partyBooths = {};
         parties.forEach(p => partyBooths[p] = 0);
-        
+
         boothWinners.forEach(booth => {
             const party = normalizeParty(booth.party);
             if (partyBooths[party] !== undefined) {
                 partyBooths[party]++;
             }
         });
-        
+
         parties.forEach(party => {
             const percentage = totalBooths > 0 ? (partyBooths[party] / totalBooths * 100) : 0;
             partyData[party].push(percentage);
@@ -2683,25 +2723,26 @@ function createBoothShareChart() {
     if (charts.boothShare) charts.boothShare.destroy();
     
     charts.boothShare = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: years,
             datasets: parties.map(party => ({
                 label: getPartyName(party),
                 data: partyData[party],
-                backgroundColor: getPartyColor(party)
+                borderColor: getPartyColor(party),
+                backgroundColor: getPartyColor(party) + '20',
+                tension: 0.2,
+                fill: false
             }))
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: { display: false }
             },
             scales: {
-                x: { stacked: true },
-                y: { 
-                    stacked: true,
+                y: {
                     beginAtZero: true,
                     max: 100,
                     ticks: { callback: value => value + '%' }
@@ -2794,6 +2835,7 @@ function createBoothFlipsChart() {
     const years = getAvailableYears();
     const transitions = [];
     const flipsData = [];
+    const partySet = new Set();
     
     for (let i = 1; i < years.length; i++) {
         const prevYear = years[i - 1];
@@ -2807,6 +2849,7 @@ function createBoothFlipsChart() {
         const flipsByParty = {};
         shifts.topChanges.forEach(change => {
             const toParty = normalizeParty(change.currTop);
+            partySet.add(toParty);
             if (!flipsByParty[toParty]) flipsByParty[toParty] = 0;
             flipsByParty[toParty]++;
         });
@@ -2819,7 +2862,7 @@ function createBoothFlipsChart() {
     }
     
     // Create stacked bar chart
-    const parties = ['ALP', 'LIB', 'GRN', 'IND'];
+    const parties = Array.from(partySet).sort();
     const datasets = parties.map(party => ({
         label: getPartyName(party),
         data: flipsData.map(d => d.byParty[party] || 0),
@@ -2838,7 +2881,7 @@ function createBoothFlipsChart() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: { display: false }
             },
             scales: {
                 x: { stacked: true },
