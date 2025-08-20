@@ -2172,9 +2172,12 @@ function createVoteTrendChart() {
             partyData[party].push(percentage);
         });
     });
-    
+
+    const maxPercentage = Math.max(...parties.map(p => Math.max(...partyData[p])));
+    const yMax = maxPercentage < 60 ? 60 : 100;
+
     if (charts.voteTrend) charts.voteTrend.destroy();
-    
+
     charts.voteTrend = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -2196,7 +2199,7 @@ function createVoteTrendChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: yMax,
                     ticks: { callback: value => value + '%' }
                 }
             }
@@ -2552,9 +2555,12 @@ function updateHistoricalElectorateCharts() {
             partyData[party].push(percentage);
         });
     });
-    
+
+    const maxPercentage = Math.max(...parties.map(p => Math.max(...partyData[p])));
+    const yMax = maxPercentage < 60 ? 60 : 100;
+
     if (charts.electorateVoteTrend) charts.electorateVoteTrend.destroy();
-    
+
     charts.electorateVoteTrend = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -2580,7 +2586,7 @@ function updateHistoricalElectorateCharts() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: yMax,
                     ticks: { callback: value => value + '%' }
                 }
             }
@@ -2720,9 +2726,12 @@ function createBoothShareChart() {
             partyData[party].push(percentage);
         });
     });
-    
+
+    const maxPercentage = Math.max(...parties.map(p => Math.max(...partyData[p])));
+    const yMax = maxPercentage < 60 ? 60 : 100;
+
     if (charts.boothShare) charts.boothShare.destroy();
-    
+
     charts.boothShare = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -2745,7 +2754,7 @@ function createBoothShareChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: yMax,
                     ticks: { callback: value => value + '%' }
                 }
             }
@@ -2785,11 +2794,14 @@ function createVoteTypeChart() {
         
         const total = physicalVotes + nonPhysicalVotes;
         physicalData.push(total > 0 ? (physicalVotes / total * 100) : 0);
-        nonPhysicalData.push(total > 0 ? (nonPhysicalVotes / total * 100) : 0);
+       nonPhysicalData.push(total > 0 ? (nonPhysicalVotes / total * 100) : 0);
     });
-    
+
+    const maxPercentage = Math.max(...physicalData, ...nonPhysicalData);
+    const yMax = maxPercentage < 60 ? 60 : 100;
+
     if (charts.voteType) charts.voteType.destroy();
-    
+
     charts.voteType = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -2820,7 +2832,7 @@ function createVoteTypeChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: yMax,
                     ticks: { callback: value => value + '%' }
                 }
             }
@@ -3500,6 +3512,9 @@ function createBoothFlipsChart() {
 
             if (charts.trend) charts.trend.destroy();
             if (trendData.length > 0) {
+                const maxPercentage = Math.max(...trendData.map(d => d.percent));
+                const yMax = maxPercentage < 60 ? 60 : 100;
+
                 charts.trend = new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
@@ -3512,13 +3527,14 @@ function createBoothFlipsChart() {
                             tension: 0.2
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: {
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: {
                                 beginAtZero: true,
+                                max: yMax,
                                 ticks: { callback: value => value + '%' }
                             }
                         }
@@ -3634,6 +3650,10 @@ function createBoothFlipsChart() {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
 
+            const percentages = sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0);
+            const maxPercentage = Math.max(...percentages);
+            const yMax = maxPercentage < 60 ? 60 : 100;
+
             if (charts.party) charts.party.destroy();
 
             charts.party = new Chart(ctx.getContext('2d'), {
@@ -3642,7 +3662,7 @@ function createBoothFlipsChart() {
                     labels: sortedParties.map(p => getPartyName(p[0])),
                     datasets: [{
                         label: 'Vote %',
-                        data: sortedParties.map(p => totalVotes ? (p[1] / totalVotes * 100) : 0),
+                        data: percentages,
                         backgroundColor: sortedParties.map(p => getPartyColor(p[0]))
                     }]
                 },
@@ -3655,7 +3675,7 @@ function createBoothFlipsChart() {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
+                            max: yMax,
                             ticks: {
                                 callback: value => value + '%'
                             }
