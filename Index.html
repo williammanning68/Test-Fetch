@@ -3226,7 +3226,8 @@ function createBoothFlipsChart() {
                 return { name: booth.n, votes: booth.v, percentage, total: boothTotal };
             });
 
-            const sortedBooths = [...boothStats].sort((a, b) => b.percentage - a.percentage);
+            // Sort booths by raw vote count to identify highest and lowest performing booths
+            const sortedBooths = [...boothStats].sort((a, b) => b.votes - a.votes);
 
             const prevYear = getPreviousYear(year);
             let prevData = null;
