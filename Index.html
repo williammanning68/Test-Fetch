@@ -476,6 +476,9 @@
         // POLLING PLACE COORDINATES - Will be fetched from JSON
         // =====================================================
         let POLLING_PLACES = {};
+
+        // OpenAI API key for generating summaries
+        window.OPENAI_API_KEY = 'IEqPF7BKXARcrjZZcpdMIrhjn4ywKvplAzGXkl0PoRw1JwYID9dGLoT7KRZo4PkMStufFZz24T3BlbkFJL0G1tACgB1suWTrJJIja6q9oYGklSxWuWmrkvUjCvtPcwV1rmqwu_YV6sDpaNy5JebUCe5FYoA';
         
         // URL for polling places data
         const POLLING_PLACES_URL = 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Polling%20Locations%20-%20Year%20and%20Election%20Type.json';
@@ -1497,17 +1500,11 @@ function getPartyColor(party) {
                     </div>
                     <div id="ai-summary" class="table-container small" style="margin-top:1rem; padding:0.5rem 1rem;">
                         <h3>AI Summary</h3>
-                        <button id="generateSummary">Summarize Candidate Performance</button>
-                        <div id="summary-output"></div>
+                        <div id="summary-output">Generating summary...</div>
                     </div>
                 </div>
             </div>
         </div>`;
-        const summaryBtn = document.getElementById('generateSummary');
-        if (summaryBtn) {
-            summaryBtn.addEventListener('click', generateCandidateSummary);
-        }
-
         if (candidate) {
             loadCandidateData(year, candidate);
         }
@@ -2279,6 +2276,9 @@ function renderHistoricalView(container) {
             createCandidateTrendChart(candidate, electorate);
             createDistributionChart(boothStats);
             createCandidateBoothMap(boothStats, electorate);
+
+            // Generate AI summary after stats are calculated
+            generateCandidateSummary();
         }
 
         function createCandidateTrendChart(candidate, electorate) {
@@ -2935,8 +2935,12 @@ const legend = L.control({position: 'bottomright'});
             const iqr = document.getElementById('iqrBooth')?.innerText || '';
             const cv = document.getElementById('cvBooth')?.innerText || '';
             const outliers = document.getElementById('outlierCount')?.innerText || '';
+            const output = document.getElementById('summary-output');
+            if (output) {
+                output.innerText = 'Generating summary...';
+            }
             const prompt =
-                `Summarize candidate performance based on:` +
+                `Provide a concise explanation of the candidate's performance using consistency and distribution metrics:` +
                 `\n- Median booth %: ${median}` +
                 `\n- IQR: ${iqr}` +
                 `\n- Coefficient of Variation: ${cv}` +
@@ -2946,7 +2950,7 @@ const legend = L.control({position: 'bottomright'});
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + (window.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY')
+                        'Authorization': 'Bearer ' + (window.OPENAI_API_KEY || '')
                     },
                     body: JSON.stringify({
                         model: 'gpt-3.5-turbo',
@@ -2957,13 +2961,11 @@ const legend = L.control({position: 'bottomright'});
                 });
                 const result = await response.json();
                 const summary = result.choices?.[0]?.message?.content?.trim();
-                const output = document.getElementById('summary-output');
                 if (output) {
                     output.innerText = summary || 'Summary unavailable.';
                 }
             } catch (err) {
                 console.error('Summary failed', err);
-                const output = document.getElementById('summary-output');
                 if (output) {
                     output.innerText = 'Summary unavailable.';
                 }
