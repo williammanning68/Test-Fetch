@@ -2931,44 +2931,70 @@ const legend = L.control({position: 'bottomright'});
         });
 
         async function generateCandidateSummary() {
-            const median = document.getElementById('medianBooth')?.innerText || '';
-            const iqr = document.getElementById('iqrBooth')?.innerText || '';
-            const cv = document.getElementById('cvBooth')?.innerText || '';
-            const outliers = document.getElementById('outlierCount')?.innerText || '';
+            const medianText = document.getElementById('medianBooth')?.innerText || '';
+            const iqrText = document.getElementById('iqrBooth')?.innerText || '';
+            const cvText = document.getElementById('cvBooth')?.innerText || '';
+            const outlierText = document.getElementById('outlierCount')?.innerText || '';
             const output = document.getElementById('summary-output');
             if (output) {
                 output.innerText = 'Generating summary...';
             }
-            const prompt =
-                `Provide a concise explanation of the candidate's performance using consistency and distribution metrics:` +
-                `\n- Median booth %: ${median}` +
-                `\n- IQR: ${iqr}` +
-                `\n- Coefficient of Variation: ${cv}` +
-                `\n- Outlier booths: ${outliers}`;
-            try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + (window.OPENAI_API_KEY || '')
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
-                        messages: [{ role: 'user', content: prompt }],
-                        max_tokens: 100,
-                        temperature: 0.7
-                    })
-                });
-                const result = await response.json();
-                const summary = result.choices?.[0]?.message?.content?.trim();
-                if (output) {
-                    output.innerText = summary || 'Summary unavailable.';
+
+            const median = parseFloat(medianText) || 0;
+            const iqr = parseFloat(iqrText) || 0;
+            const cv = parseFloat(cvText) || 0;
+            const outliers = parseInt(outlierText, 10) || 0;
+
+            const fallbackSummary = (() => {
+                const spread = iqr > 20 ? 'wide spread' : iqr > 10 ? 'moderate spread' : 'narrow spread';
+                const consistency = cv > 0.3
+                    ? 'high variability'
+                    : cv > 0.15
+                        ? 'moderate variability'
+                        : 'consistent results';
+                const outlierSentence = outliers === 0
+                    ? 'No notable outlier booths were detected.'
+                    : `${outliers} outlier${outliers === 1 ? '' : 's'} indicate pockets of unusual support.`;
+                return `Median booth result of ${median}% with a ${spread}. ${consistency} (${cv}% CV). ${outlierSentence}`;
+            })();
+
+            // Attempt to use OpenAI if a valid API key is supplied
+            if (window.OPENAI_API_KEY && window.OPENAI_API_KEY.startsWith('sk-')) {
+                const prompt =
+                    `Provide a concise explanation of the candidate's performance using consistency and distribution metrics:` +
+                    `\n- Median booth %: ${medianText}` +
+                    `\n- IQR: ${iqrText}` +
+                    `\n- Coefficient of Variation: ${cvText}` +
+                    `\n- Outlier booths: ${outlierText}`;
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + window.OPENAI_API_KEY
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-3.5-turbo',
+                            messages: [{ role: 'user', content: prompt }],
+                            max_tokens: 100,
+                            temperature: 0.7
+                        })
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        const summary = result.choices?.[0]?.message?.content?.trim();
+                        if (summary && output) {
+                            output.innerText = summary;
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('AI summary failed', err);
                 }
-            } catch (err) {
-                console.error('Summary failed', err);
-                if (output) {
-                    output.innerText = 'Summary unavailable.';
-                }
+            }
+
+            if (output) {
+                output.innerText = fallbackSummary;
             }
         }
     </script>
