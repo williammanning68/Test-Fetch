@@ -3947,7 +3947,7 @@ function createBoothFlipsChart() {
                         });
                     })();
                 }
-boothMap.addLayer(mapMarkers);
+                boothMap.addLayer(mapMarkers);
                 
                 
                 // --- GeoJSON Overlay selector (State, LegCo, LGA) [attached directly to boothMap] ---
@@ -3956,9 +3956,9 @@ boothMap.addLayer(mapMarkers);
                     map.__overlayCtlAdded = true;
 
                     const OVERLAY_URLS = {
-                        state: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State Election Electorate Boundaries.geojson',
-                        legco: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative Council Electorate Boundaries.geojson',
-                                            };
+                        state: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/State%20Election%20Electorate%20Boundaries.geojson',
+                        legco: 'https://raw.githubusercontent.com/williammanning68/Test-Fetch/main/Legislative%20Council%20Electorate%20Boundaries.geojson',
+                    };
 
                     const state = { current: null, cache: {} };
 
