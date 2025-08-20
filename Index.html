@@ -2921,5 +2921,41 @@ const legend = L.control({position: 'bottomright'});
             }
         });
     </script>
+    <div id="ai-summary" style="padding:1rem;">
+        <h2>AI Summary</h2>
+        <button id="generateSummary">Summarize Booth Analysis</button>
+        <div id="summary-output"></div>
+    </div>
+    <script>
+        async function generateSummary() {
+            const source = document.getElementById('boothAnalysisSummaryBody');
+            if (!source) {
+                console.warn('Booth analysis container not found.');
+                return;
+            }
+            const text = source.innerText.trim();
+            if (!text) {
+                console.warn('Booth analysis container is empty.');
+                return;
+            }
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${window.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY'}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [{ role: 'user', content: `Summarize the following booth analysis data:\n\n${text}` }],
+                    max_tokens: 150,
+                    temperature: 0.7
+                })
+            });
+            const result = await response.json();
+            const summary = result.choices?.[0]?.message?.content?.trim();
+            document.getElementById('summary-output').innerText = summary || 'Summary unavailable.';
+        }
+        document.getElementById('generateSummary').addEventListener('click', generateSummary);
+    </script>
 </body>
 </html>
