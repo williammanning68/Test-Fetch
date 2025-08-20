@@ -1495,8 +1495,8 @@ function getPartyColor(party) {
             <div style="margin-top: 1.5rem;">
                 <h3>Booth Map - Candidate Performance</h3>
                 <div id="boothMapToggle" style="margin: 0.25rem 0 0.5rem 0; display:flex; gap:0.5rem; flex-wrap:wrap;">
-                    <button id="boothShareBtn" class="active" title="Color booths by vote share">Share %</button>
-                    <button id="boothVotesBtn" title="Color booths by raw votes">Votes</button>
+                    <button id="boothShareBtn" type="button" class="active" title="Color booths by vote share">Share %</button>
+                    <button id="boothVotesBtn" type="button" title="Color booths by raw votes">Votes</button>
                 </div>
                 <div id="boothMap"></div>
             </div>
@@ -3495,16 +3495,18 @@ function createBoothFlipsChart() {
             const shareBtn = document.getElementById('boothShareBtn');
             const votesBtn = document.getElementById('boothVotesBtn');
             if (shareBtn && votesBtn) {
-                shareBtn.onclick = () => {
+                shareBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     shareBtn.classList.add('active');
                     votesBtn.classList.remove('active');
                     createCandidateBoothMap(boothStats, electorate, 'share');
-                };
-                votesBtn.onclick = () => {
+                });
+                votesBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     votesBtn.classList.add('active');
                     shareBtn.classList.remove('active');
                     createCandidateBoothMap(boothStats, electorate, 'votes');
-                };
+                });
             }
         }
 
