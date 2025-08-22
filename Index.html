@@ -1860,7 +1860,25 @@ function filterDropdownOptions(type, searchTerm) {
                     <div class="stat-label">±2σ from mean</div>
                 </div>
             </div>
-            
+
+            <div style="margin-top: 1.5rem;">
+                <h3>Performance Benchmarks</h3>
+                <table class="data-table" id="benchmarkTable">
+                    <thead>
+                        <tr>
+                            <th>Group</th>
+                            <th>Median % (Rank)</th>
+                            <th>IQR (Rank)</th>
+                            <th>CV (Rank)</th>
+                            <th>Outliers (Rank)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmarkBody">
+                        <tr><td colspan="5">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="panel-grid" style="margin-top: 1.5rem;">
                 <div>
                     <h3>Distribution of Booth Performance</h3>
@@ -5070,12 +5088,106 @@ function createBoothFlipsChart() {
                     createBoothVoteChart(boothResults);
                 };
             }}
-        
+        function calculateBoothMetrics(candidateData, electorateData) {
+            const boothResults = candidateData.b || [];
+            const physicalBooths = boothResults.filter(b => isPhysicalBooth(b.n));
+            const boothStats = physicalBooths.map(booth => {
+                let boothTotal = 0;
+                electorateData.forEach(c => {
+                    const b = (c.b || []).find(b => b.n === booth.n);
+                    if (b) boothTotal += b.v;
+                });
+                const percentage = boothTotal > 0 ? (booth.v / boothTotal * 100) : 0;
+                return { name: booth.n, votes: booth.v, percentage, total: boothTotal };
+            });
+
+            const percentages = boothStats.map(b => b.percentage);
+            percentages.sort((a, b) => a - b);
+
+            const median = percentages.length > 0 ? percentages[Math.floor(percentages.length / 2)] : 0;
+            const q1 = percentages[Math.floor(percentages.length * 0.25)];
+            const q3 = percentages[Math.floor(percentages.length * 0.75)];
+            const iqr = q3 - q1;
+
+            const mean = percentages.reduce((sum, p) => sum + p, 0) / (percentages.length || 1);
+            const variance = percentages.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (percentages.length || 1);
+            const stdDev = Math.sqrt(variance);
+            const cv = mean > 0 ? (stdDev / mean * 100) : 0;
+
+            const outliers = boothStats.filter(b => Math.abs(b.percentage - mean) > 2 * stdDev);
+
+            return { boothStats, median, iqr, cv, outliers, mean, stdDev };
+        }
+
+        function computeBenchmarks(year, candidateData) {
+            const normalizedParty = normalizeParty(candidateData.p);
+            const candidateNorm = normalizeCandidateName(candidateData.c);
+            const statewideData = getCurrentData(year, 'state', '', '', '');
+            const groups = [
+                { name: `${getPartyName(candidateData.p)} statewide`, filter: c => normalizeParty(c.p) === normalizedParty },
+                { name: `All candidates in ${candidateData.d}`, filter: c => c.d === candidateData.d },
+                { name: `${getPartyName(candidateData.p)} in ${candidateData.d}`, filter: c => c.d === candidateData.d && normalizeParty(c.p) === normalizedParty },
+                { name: 'All candidates statewide', filter: () => true }
+            ];
+
+            return groups.map(group => {
+                const groupCandidates = statewideData.filter(group.filter);
+                const metricsList = groupCandidates.map(cd => {
+                    const elData = getCurrentData(year, 'electorate', cd.d, '', '');
+                    const { median, iqr, cv, outliers } = calculateBoothMetrics(cd, elData);
+                    return { name: normalizeCandidateName(cd.c), median, iqr, cv, outlierCount: outliers.length };
+                });
+
+                const avg = {
+                    median: metricsList.reduce((s, m) => s + m.median, 0) / metricsList.length,
+                    iqr: metricsList.reduce((s, m) => s + m.iqr, 0) / metricsList.length,
+                    cv: metricsList.reduce((s, m) => s + m.cv, 0) / metricsList.length,
+                    outliers: metricsList.reduce((s, m) => s + m.outlierCount, 0) / metricsList.length
+                };
+
+                const rankMedian = [...metricsList].sort((a, b) => b.median - a.median).findIndex(m => m.name === candidateNorm) + 1;
+                const rankIqr = [...metricsList].sort((a, b) => a.iqr - b.iqr).findIndex(m => m.name === candidateNorm) + 1;
+                const rankCv = [...metricsList].sort((a, b) => a.cv - b.cv).findIndex(m => m.name === candidateNorm) + 1;
+                const rankOutliers = [...metricsList].sort((a, b) => a.outlierCount - b.outlierCount).findIndex(m => m.name === candidateNorm) + 1;
+
+                return {
+                    group: group.name,
+                    avgMedian: avg.median,
+                    avgIqr: avg.iqr,
+                    avgCv: avg.cv,
+                    avgOutliers: avg.outliers,
+                    rankMedian,
+                    rankIqr,
+                    rankCv,
+                    rankOutliers,
+                    total: metricsList.length
+                };
+            });
+        }
+
+        function updateBenchmarkTable(benchmarks) {
+            const body = document.getElementById('benchmarkBody');
+            if (!body) return;
+            body.innerHTML = '';
+            benchmarks.forEach(b => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${b.group}</td>
+                    <td>${b.avgMedian.toFixed(1)}% (#${b.rankMedian}/${b.total})</td>
+                    <td>${b.avgIqr.toFixed(1)}pp (#${b.rankIqr}/${b.total})</td>
+                    <td>${b.avgCv.toFixed(1)}% (#${b.rankCv}/${b.total})</td>
+                    <td>${b.avgOutliers.toFixed(1)} (#${b.rankOutliers}/${b.total})</td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
         function loadCandidateData(year, candidate) {
             const data = getCurrentData(year, 'candidate', '', '', candidate);
 
             if (!candidate || data.length === 0) {
                 document.getElementById('primaryVotes').textContent = '—';
+                updateBenchmarkTable([]);
                 return;
             }
 
@@ -5114,18 +5226,7 @@ function createBoothFlipsChart() {
             document.getElementById('overallRank').textContent = `#${overallRank}`;
             document.getElementById('overallRankLabel').textContent = `of ${sortedCandidates.length} candidates`;
 
-            const boothResults = candidateData.b || [];
-            const physicalBooths = boothResults.filter(b => isPhysicalBooth(b.n));
-
-            const boothStats = physicalBooths.map(booth => {
-                let boothTotal = 0;
-                electorateData.forEach(c => {
-                    const b = (c.b || []).find(b => b.n === booth.n);
-                    if (b) boothTotal += b.v;
-                });
-                const percentage = boothTotal > 0 ? (booth.v / boothTotal * 100) : 0;
-                return { name: booth.n, votes: booth.v, percentage, total: boothTotal };
-            });
+            const { boothStats, median, iqr, cv, outliers, mean, stdDev } = calculateBoothMetrics(candidateData, electorateData);
 
             // Sort booths by raw vote count to identify highest and lowest performing booths
             const sortedBooths = [...boothStats].sort((a, b) => b.votes - a.votes);
@@ -5189,7 +5290,7 @@ function createBoothFlipsChart() {
 
             const boothSwings = new Map();
             if (prevData && prevData.b) {
-                physicalBooths.forEach(booth => {
+                boothStats.forEach(booth => {
                     const prevBooth = prevData.b.find(b => b.n === booth.name);
                     if (prevBooth) {
                         let prevBoothTotal = 0;
@@ -5289,21 +5390,6 @@ function createBoothFlipsChart() {
             const summaryEl = document.getElementById('candidateSummary');
             if (summaryEl) summaryEl.textContent = summary;
 
-            const percentages = boothStats.map(b => b.percentage);
-            percentages.sort((a, b) => a - b);
-
-            const median = percentages.length > 0 ? percentages[Math.floor(percentages.length / 2)] : 0;
-            const q1 = percentages[Math.floor(percentages.length * 0.25)];
-            const q3 = percentages[Math.floor(percentages.length * 0.75)];
-            const iqr = q3 - q1;
-
-            const mean = percentages.reduce((sum, p) => sum + p, 0) / percentages.length;
-            const variance = percentages.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / percentages.length;
-            const stdDev = Math.sqrt(variance);
-            const cv = mean > 0 ? (stdDev / mean * 100) : 0;
-
-            const outliers = boothStats.filter(b => Math.abs(b.percentage - mean) > 2 * stdDev);
-
             document.getElementById('medianBooth').textContent = `${median.toFixed(1)}%`;
             document.getElementById('iqrBooth').textContent = `${iqr.toFixed(1)}pp`;
             document.getElementById('cvBooth').textContent = `${cv.toFixed(1)}%`;
@@ -5328,6 +5414,9 @@ function createBoothFlipsChart() {
                     outlierBody.innerHTML = '<tr><td colspan="4">No significant outliers detected</td></tr>';
                 }
             }
+
+            const benchmarks = computeBenchmarks(year, candidateData);
+            updateBenchmarkTable(benchmarks);
 
             createCandidateTrendChart(candidate, electorate);
             createDistributionChart(boothStats);
