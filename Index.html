@@ -1265,7 +1265,65 @@ function getPartyColor(party) {
             
             return data;
         }
-        
+
+        function computeBenchmarks(candidates) {
+            const boothTotals = new Map();
+            candidates.forEach(c => {
+                (c.b || []).forEach(b => {
+                    if (!isPhysicalBooth(b.n)) return;
+                    boothTotals.set(b.n, (boothTotals.get(b.n) || 0) + b.v);
+                });
+            });
+
+            const percentages = [];
+            candidates.forEach(c => {
+                (c.b || []).forEach(b => {
+                    if (!isPhysicalBooth(b.n)) return;
+                    const total = boothTotals.get(b.n) || 0;
+                    const pct = total > 0 ? (b.v / total) * 100 : 0;
+                    percentages.push(pct);
+                });
+            });
+
+            const mean = percentages.length ? percentages.reduce((s, p) => s + p, 0) / percentages.length : 0;
+            const variance = percentages.length ? percentages.reduce((s, p) => s + Math.pow(p - mean, 2), 0) / percentages.length : 0;
+            const stdDev = Math.sqrt(variance);
+
+            return { mean, stdDev, boothTotals };
+        }
+
+        function calculateBoothMetrics(candidate, benchmarks) {
+            const boothStats = [];
+            let underCount = 0, overCount = 0, total = 0;
+
+            (candidate.b || []).forEach(b => {
+                if (!isPhysicalBooth(b.n)) return;
+                const totalVotes = benchmarks.boothTotals.get(b.n) || 0;
+                const percentage = totalVotes > 0 ? (b.v / totalVotes) * 100 : 0;
+                const deviation = benchmarks.stdDev > 0 ? (percentage - benchmarks.mean) / benchmarks.stdDev : 0;
+                let status = 'Normal';
+                if (deviation > 2) { status = 'Overperforming'; overCount++; }
+                else if (deviation < -2) { status = 'Underperforming'; underCount++; }
+                boothStats.push({ name: b.n, votes: b.v, percentage, deviation, status, total: totalVotes });
+                total++;
+            });
+
+            const percentages = boothStats.map(b => b.percentage).sort((a, b) => a - b);
+            const median = percentages.length ? percentages[Math.floor(percentages.length / 2)] : 0;
+            const q1 = percentages.length ? percentages[Math.floor(percentages.length * 0.25)] : 0;
+            const q3 = percentages.length ? percentages[Math.floor(percentages.length * 0.75)] : 0;
+            const iqr = q3 - q1;
+            const mean = percentages.length ? percentages.reduce((s, p) => s + p, 0) / percentages.length : 0;
+            const variance = percentages.length ? percentages.reduce((s, p) => s + Math.pow(p - mean, 2), 0) / percentages.length : 0;
+            const stdDev = Math.sqrt(variance);
+            const cv = mean > 0 ? (stdDev / mean * 100) : 0;
+            const outliers = boothStats.filter(b => b.status !== 'Normal');
+            const overProp = total > 0 ? overCount / total : 0;
+            const underProp = total > 0 ? underCount / total : 0;
+
+            return { boothStats, median, iqr, cv, outliers, overCount, underCount, overProp, underProp };
+        }
+
         function updateElectorateDropdown() {
     const electorateSelect = document.getElementById('electorateSelect');
     const currentValue = electorateSelect.value;
@@ -1857,7 +1915,7 @@ function filterDropdownOptions(type, searchTerm) {
                 <div class="stat-card">
                     <h3>Outlier Booths</h3>
                     <div class="stat-value" id="outlierCount">—</div>
-                    <div class="stat-label">±2σ from mean</div>
+                    <div class="stat-label">±2σ from group mean</div>
                 </div>
             </div>
             
@@ -5114,18 +5172,10 @@ function createBoothFlipsChart() {
             document.getElementById('overallRank').textContent = `#${overallRank}`;
             document.getElementById('overallRankLabel').textContent = `of ${sortedCandidates.length} candidates`;
 
-            const boothResults = candidateData.b || [];
-            const physicalBooths = boothResults.filter(b => isPhysicalBooth(b.n));
-
-            const boothStats = physicalBooths.map(booth => {
-                let boothTotal = 0;
-                electorateData.forEach(c => {
-                    const b = (c.b || []).find(b => b.n === booth.n);
-                    if (b) boothTotal += b.v;
-                });
-                const percentage = boothTotal > 0 ? (booth.v / boothTotal * 100) : 0;
-                return { name: booth.n, votes: booth.v, percentage, total: boothTotal };
-            });
+            const benchmarks = computeBenchmarks(electorateData);
+            const metrics = calculateBoothMetrics(candidateData, benchmarks);
+            const boothStats = metrics.boothStats;
+            const physicalBooths = boothStats;
 
             // Sort booths by raw vote count to identify highest and lowest performing booths
             const sortedBooths = [...boothStats].sort((a, b) => b.votes - a.votes);
@@ -5280,6 +5330,7 @@ function createBoothFlipsChart() {
             if (bottomBoothNames.length > 0) {
                 summary += ` While their lowest performing booths were ${formatList(bottomBoothNames)}.`;
             }
+            summary += ` They had ${metrics.overCount} overperforming and ${metrics.underCount} underperforming booths relative to electorate averages.`;
             if (prevData && swing !== null) {
                 const perf = parseFloat(swing) > 0 ? 'better' : parseFloat(swing) < 0 ? 'worse' : 'the same';
                 summary += ` Compared to their previous election results, they achieved a ${perf} result, with an overall swing of ${parseFloat(swing) > 0 ? '+' : ''}${swing}%.`;
@@ -5289,39 +5340,22 @@ function createBoothFlipsChart() {
             const summaryEl = document.getElementById('candidateSummary');
             if (summaryEl) summaryEl.textContent = summary;
 
-            const percentages = boothStats.map(b => b.percentage);
-            percentages.sort((a, b) => a - b);
-
-            const median = percentages.length > 0 ? percentages[Math.floor(percentages.length / 2)] : 0;
-            const q1 = percentages[Math.floor(percentages.length * 0.25)];
-            const q3 = percentages[Math.floor(percentages.length * 0.75)];
-            const iqr = q3 - q1;
-
-            const mean = percentages.reduce((sum, p) => sum + p, 0) / percentages.length;
-            const variance = percentages.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / percentages.length;
-            const stdDev = Math.sqrt(variance);
-            const cv = mean > 0 ? (stdDev / mean * 100) : 0;
-
-            const outliers = boothStats.filter(b => Math.abs(b.percentage - mean) > 2 * stdDev);
-
-            document.getElementById('medianBooth').textContent = `${median.toFixed(1)}%`;
-            document.getElementById('iqrBooth').textContent = `${iqr.toFixed(1)}pp`;
-            document.getElementById('cvBooth').textContent = `${cv.toFixed(1)}%`;
-            document.getElementById('outlierCount').textContent = outliers.length;
+            document.getElementById('medianBooth').textContent = `${metrics.median.toFixed(1)}%`;
+            document.getElementById('iqrBooth').textContent = `${metrics.iqr.toFixed(1)}pp`;
+            document.getElementById('cvBooth').textContent = `${metrics.cv.toFixed(1)}%`;
+            document.getElementById('outlierCount').textContent = metrics.outliers.length;
 
             const outlierBody = document.getElementById('outlierBoothsBody');
             if (outlierBody) {
-                if (outliers.length > 0) {
+                if (metrics.outliers.length > 0) {
                     outlierBody.innerHTML = '';
-                    outliers.forEach(booth => {
-                        const deviation = ((booth.percentage - mean) / stdDev).toFixed(2);
-                        const type = booth.percentage > mean ? 'Overperforming' : 'Underperforming';
+                    metrics.outliers.forEach(booth => {
                         const row = outlierBody.insertRow();
                         row.innerHTML = `
                     <td>${booth.name}</td>
                     <td>${booth.percentage.toFixed(1)}%</td>
-                    <td>${deviation}σ</td>
-                    <td style="color: ${booth.percentage > mean ? 'green' : 'red'}">${type}</td>
+                    <td>${booth.deviation.toFixed(2)}σ</td>
+                    <td style="color: ${booth.status === 'Overperforming' ? 'green' : 'red'}">${booth.status}</td>
                 `;
                     });
                 } else {
