@@ -173,6 +173,28 @@
             margin-bottom: 0.75rem;
             font-size: 1.1rem;
         }
+
+        .benchmark-controls {
+            margin-bottom: 0.75rem;
+        }
+
+        .info-icon {
+            cursor: help;
+            margin-left: 0.25rem;
+            color: var(--federal-gold);
+        }
+
+        .trend-up {
+            color: green;
+        }
+
+        .trend-down {
+            color: red;
+        }
+
+        .trend-flat {
+            color: gray;
+        }
         
         .chart-container {
             height: 400px;
@@ -847,6 +869,9 @@
         let selectedParties = new Set(['ALL']);
         let boothMap = null;
         let mapMarkers = null;
+        let benchmarkMode = 'absolute';
+        let currentBenchmarks = [];
+        let previousBenchmarks = [];
         
         const NON_PHYSICAL_BOOTHS = [
             'postal', 'pre-poll', 'prepoll', 'mobile', 'provisional', 
@@ -1862,7 +1887,11 @@ function filterDropdownOptions(type, searchTerm) {
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <h3>Performance Benchmarks</h3>
+                <h3>Performance Benchmarks<span class="info-icon" title="Ranks compare candidate results across groups. Under/overperforming counts are relative to each candidate's booths.">ℹ️</span></h3>
+                <div class="benchmark-controls">
+                    <button id="rankModeToggle">Show Relative Ranks</button>
+                    <span class="info-icon" title="Toggle to view ranks based on raw outlier counts or proportions relative to booth totals.">ℹ️</span>
+                </div>
                 <table class="data-table" id="benchmarkTable">
                     <thead>
                         <tr>
@@ -5102,6 +5131,8 @@ function createBoothFlipsChart() {
                 return { name: booth.n, votes: booth.v, percentage, total: boothTotal };
             });
 
+            const totalBooths = boothStats.length;
+
             const percentages = boothStats.map(b => b.percentage);
             percentages.sort((a, b) => a - b);
 
@@ -5117,7 +5148,7 @@ function createBoothFlipsChart() {
 
             const outliers = boothStats.filter(b => Math.abs(b.percentage - mean) > 2 * stdDev);
 
-            return { boothStats, median, iqr, cv, outliers, mean, stdDev };
+            return { boothStats, median, iqr, cv, outliers, mean, stdDev, totalBooths };
         }
 
         function computeBenchmarks(year, candidateData) {
@@ -5135,10 +5166,12 @@ function createBoothFlipsChart() {
                 const groupCandidates = statewideData.filter(group.filter);
                 const metricsList = groupCandidates.map(cd => {
                     const elData = getCurrentData(year, 'electorate', cd.d, '', '');
-                    const { median, iqr, cv, outliers, mean } = calculateBoothMetrics(cd, elData);
+                    const { median, iqr, cv, outliers, mean, totalBooths } = calculateBoothMetrics(cd, elData);
                     const underCount = outliers.filter(o => o.percentage < mean).length;
                     const overCount = outliers.filter(o => o.percentage > mean).length;
-                    return { name: normalizeCandidateName(cd.c), median, iqr, cv, underCount, overCount };
+                    const underProp = totalBooths > 0 ? underCount / totalBooths : 0;
+                    const overProp = totalBooths > 0 ? overCount / totalBooths : 0;
+                    return { name: normalizeCandidateName(cd.c), median, iqr, cv, underCount, overCount, underProp, overProp };
                 });
 
                 const avg = {
@@ -5146,7 +5179,9 @@ function createBoothFlipsChart() {
                     iqr: metricsList.reduce((s, m) => s + m.iqr, 0) / metricsList.length,
                     cv: metricsList.reduce((s, m) => s + m.cv, 0) / metricsList.length,
                     under: metricsList.reduce((s, m) => s + m.underCount, 0) / metricsList.length,
-                    over: metricsList.reduce((s, m) => s + m.overCount, 0) / metricsList.length
+                    over: metricsList.reduce((s, m) => s + m.overCount, 0) / metricsList.length,
+                    underProp: metricsList.reduce((s, m) => s + m.underProp, 0) / metricsList.length,
+                    overProp: metricsList.reduce((s, m) => s + m.overProp, 0) / metricsList.length
                 };
 
                 const rankMedian = [...metricsList].sort((a, b) => b.median - a.median).findIndex(m => m.name === candidateNorm) + 1;
@@ -5154,6 +5189,8 @@ function createBoothFlipsChart() {
                 const rankCv = [...metricsList].sort((a, b) => a.cv - b.cv).findIndex(m => m.name === candidateNorm) + 1;
                 const rankUnder = [...metricsList].sort((a, b) => a.underCount - b.underCount).findIndex(m => m.name === candidateNorm) + 1;
                 const rankOver = [...metricsList].sort((a, b) => b.overCount - a.overCount).findIndex(m => m.name === candidateNorm) + 1;
+                const rankUnderProp = [...metricsList].sort((a, b) => a.underProp - b.underProp).findIndex(m => m.name === candidateNorm) + 1;
+                const rankOverProp = [...metricsList].sort((a, b) => b.overProp - a.overProp).findIndex(m => m.name === candidateNorm) + 1;
 
                 return {
                     group: group.name,
@@ -5162,29 +5199,50 @@ function createBoothFlipsChart() {
                     avgCv: avg.cv,
                     avgUnder: avg.under,
                     avgOver: avg.over,
+                    avgUnderProp: avg.underProp,
+                    avgOverProp: avg.overProp,
                     rankMedian,
                     rankIqr,
                     rankCv,
                     rankUnder,
                     rankOver,
+                    rankUnderProp,
+                    rankOverProp,
                     total: metricsList.length
                 };
             });
         }
 
-        function updateBenchmarkTable(benchmarks) {
+        function updateBenchmarkTable(benchmarks, prev = []) {
             const body = document.getElementById('benchmarkBody');
             if (!body) return;
             body.innerHTML = '';
+            const prevMap = new Map(prev.map(p => [p.group, p]));
+
+            const trend = (curr, prevRank) => {
+                if (!prevRank) return '';
+                const diff = prevRank - curr;
+                if (diff > 0) return ` <span class="trend-up">↑${diff}</span>`;
+                if (diff < 0) return ` <span class="trend-down">↓${Math.abs(diff)}</span>`;
+                return ` <span class="trend-flat">→</span>`;
+            };
+
             benchmarks.forEach(b => {
                 const row = document.createElement('tr');
+                const prevB = prevMap.get(b.group) || {};
+                const underDisplay = benchmarkMode === 'relative'
+                    ? `${(b.avgUnderProp * 100).toFixed(1)}% (#${b.rankUnderProp}/${b.total}${trend(b.rankUnderProp, prevB.rankUnderProp)})`
+                    : `${b.avgUnder.toFixed(1)} (#${b.rankUnder}/${b.total}${trend(b.rankUnder, prevB.rankUnder)})`;
+                const overDisplay = benchmarkMode === 'relative'
+                    ? `${(b.avgOverProp * 100).toFixed(1)}% (#${b.rankOverProp}/${b.total}${trend(b.rankOverProp, prevB.rankOverProp)})`
+                    : `${b.avgOver.toFixed(1)} (#${b.rankOver}/${b.total}${trend(b.rankOver, prevB.rankOver)})`;
                 row.innerHTML = `
                     <td>${b.group}</td>
-                    <td>${b.avgMedian.toFixed(1)}% (#${b.rankMedian}/${b.total})</td>
-                    <td>${b.avgIqr.toFixed(1)}pp (#${b.rankIqr}/${b.total})</td>
-                    <td>${b.avgCv.toFixed(1)}% (#${b.rankCv}/${b.total})</td>
-                    <td>${b.avgUnder.toFixed(1)} (#${b.rankUnder}/${b.total})</td>
-                    <td>${b.avgOver.toFixed(1)} (#${b.rankOver}/${b.total})</td>
+                    <td>${b.avgMedian.toFixed(1)}% (#${b.rankMedian}/${b.total}${trend(b.rankMedian, prevB.rankMedian)})</td>
+                    <td>${b.avgIqr.toFixed(1)}pp (#${b.rankIqr}/${b.total}${trend(b.rankIqr, prevB.rankIqr)})</td>
+                    <td>${b.avgCv.toFixed(1)}% (#${b.rankCv}/${b.total}${trend(b.rankCv, prevB.rankCv)})</td>
+                    <td>${underDisplay}</td>
+                    <td>${overDisplay}</td>
                 `;
                 body.appendChild(row);
             });
@@ -5195,7 +5253,10 @@ function createBoothFlipsChart() {
 
             if (!candidate || data.length === 0) {
                 document.getElementById('primaryVotes').textContent = '—';
-                updateBenchmarkTable([]);
+                currentBenchmarks = [];
+                previousBenchmarks = [];
+                benchmarkMode = 'absolute';
+                updateBenchmarkTable([], []);
                 return;
             }
 
@@ -5423,8 +5484,19 @@ function createBoothFlipsChart() {
                 }
             }
 
-            const benchmarks = computeBenchmarks(year, candidateData);
-            updateBenchmarkTable(benchmarks);
+            currentBenchmarks = computeBenchmarks(year, candidateData);
+            previousBenchmarks = prevData ? computeBenchmarks(prevYear, prevData) : [];
+            benchmarkMode = 'absolute';
+            updateBenchmarkTable(currentBenchmarks, previousBenchmarks);
+            const toggle = document.getElementById('rankModeToggle');
+            if (toggle) {
+                toggle.textContent = 'Show Relative Ranks';
+                toggle.onclick = () => {
+                    benchmarkMode = benchmarkMode === 'absolute' ? 'relative' : 'absolute';
+                    toggle.textContent = benchmarkMode === 'absolute' ? 'Show Relative Ranks' : 'Show Absolute Ranks';
+                    updateBenchmarkTable(currentBenchmarks, previousBenchmarks);
+                };
+            }
 
             createCandidateTrendChart(candidate, electorate);
             createDistributionChart(boothStats);
