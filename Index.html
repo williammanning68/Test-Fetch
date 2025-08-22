@@ -176,6 +176,9 @@
 
         .benchmark-controls {
             margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .info-icon {
@@ -194,6 +197,12 @@
 
         .trend-flat {
             color: gray;
+        }
+
+        .small-note {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 0.25rem;
         }
         
         .chart-container {
@@ -1907,6 +1916,7 @@ function filterDropdownOptions(type, searchTerm) {
                         <tr><td colspan="6">—</td></tr>
                     </tbody>
                 </table>
+                <p class="small-note">Ranks show position among peers in each group; arrows indicate change from the previous election year.</p>
             </div>
 
             <div class="panel-grid" style="margin-top: 1.5rem;">
