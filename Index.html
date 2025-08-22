@@ -1870,11 +1870,12 @@ function filterDropdownOptions(type, searchTerm) {
                             <th>Median % (Rank)</th>
                             <th>IQR (Rank)</th>
                             <th>CV (Rank)</th>
-                            <th>Outliers (Rank)</th>
+                            <th>Underperforming Outliers (Rank)</th>
+                            <th>Overperforming Outliers (Rank)</th>
                         </tr>
                     </thead>
                     <tbody id="benchmarkBody">
-                        <tr><td colspan="5">—</td></tr>
+                        <tr><td colspan="6">—</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -5134,32 +5135,38 @@ function createBoothFlipsChart() {
                 const groupCandidates = statewideData.filter(group.filter);
                 const metricsList = groupCandidates.map(cd => {
                     const elData = getCurrentData(year, 'electorate', cd.d, '', '');
-                    const { median, iqr, cv, outliers } = calculateBoothMetrics(cd, elData);
-                    return { name: normalizeCandidateName(cd.c), median, iqr, cv, outlierCount: outliers.length };
+                    const { median, iqr, cv, outliers, mean } = calculateBoothMetrics(cd, elData);
+                    const underCount = outliers.filter(o => o.percentage < mean).length;
+                    const overCount = outliers.filter(o => o.percentage > mean).length;
+                    return { name: normalizeCandidateName(cd.c), median, iqr, cv, underCount, overCount };
                 });
 
                 const avg = {
                     median: metricsList.reduce((s, m) => s + m.median, 0) / metricsList.length,
                     iqr: metricsList.reduce((s, m) => s + m.iqr, 0) / metricsList.length,
                     cv: metricsList.reduce((s, m) => s + m.cv, 0) / metricsList.length,
-                    outliers: metricsList.reduce((s, m) => s + m.outlierCount, 0) / metricsList.length
+                    under: metricsList.reduce((s, m) => s + m.underCount, 0) / metricsList.length,
+                    over: metricsList.reduce((s, m) => s + m.overCount, 0) / metricsList.length
                 };
 
                 const rankMedian = [...metricsList].sort((a, b) => b.median - a.median).findIndex(m => m.name === candidateNorm) + 1;
                 const rankIqr = [...metricsList].sort((a, b) => a.iqr - b.iqr).findIndex(m => m.name === candidateNorm) + 1;
                 const rankCv = [...metricsList].sort((a, b) => a.cv - b.cv).findIndex(m => m.name === candidateNorm) + 1;
-                const rankOutliers = [...metricsList].sort((a, b) => a.outlierCount - b.outlierCount).findIndex(m => m.name === candidateNorm) + 1;
+                const rankUnder = [...metricsList].sort((a, b) => a.underCount - b.underCount).findIndex(m => m.name === candidateNorm) + 1;
+                const rankOver = [...metricsList].sort((a, b) => b.overCount - a.overCount).findIndex(m => m.name === candidateNorm) + 1;
 
                 return {
                     group: group.name,
                     avgMedian: avg.median,
                     avgIqr: avg.iqr,
                     avgCv: avg.cv,
-                    avgOutliers: avg.outliers,
+                    avgUnder: avg.under,
+                    avgOver: avg.over,
                     rankMedian,
                     rankIqr,
                     rankCv,
-                    rankOutliers,
+                    rankUnder,
+                    rankOver,
                     total: metricsList.length
                 };
             });
@@ -5176,7 +5183,8 @@ function createBoothFlipsChart() {
                     <td>${b.avgMedian.toFixed(1)}% (#${b.rankMedian}/${b.total})</td>
                     <td>${b.avgIqr.toFixed(1)}pp (#${b.rankIqr}/${b.total})</td>
                     <td>${b.avgCv.toFixed(1)}% (#${b.rankCv}/${b.total})</td>
-                    <td>${b.avgOutliers.toFixed(1)} (#${b.rankOutliers}/${b.total})</td>
+                    <td>${b.avgUnder.toFixed(1)} (#${b.rankUnder}/${b.total})</td>
+                    <td>${b.avgOver.toFixed(1)} (#${b.rankOver}/${b.total})</td>
                 `;
                 body.appendChild(row);
             });
