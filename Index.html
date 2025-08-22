@@ -1887,6 +1887,25 @@ function filterDropdownOptions(type, searchTerm) {
                     </div>
                 </div>
             </div>
+            <div style="margin-top: 1.5rem;">
+                <h3>Benchmark Comparison</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Median %</th>
+                                <th>IQR</th>
+                                <th>CV</th>
+                                <th>Outliers</th>
+                            </tr>
+                        </thead>
+                        <tbody id="benchmarkBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>`;
 
             if (candidate) {
@@ -5329,6 +5348,22 @@ function createBoothFlipsChart() {
                 }
             }
 
+            const benchmarks = computeBenchmarkStats(year, electorate, candidateNorm, normalizedParty);
+            const benchmarkBody = document.getElementById('benchmarkBody');
+            if (benchmarkBody) {
+                benchmarkBody.innerHTML = '';
+                Object.entries(benchmarks).forEach(([label, stats]) => {
+                    const row = benchmarkBody.insertRow();
+                    row.innerHTML = `
+                        <td>${label}</td>
+                        <td>${stats.median.toFixed(1)}%</td>
+                        <td>${stats.iqr.toFixed(1)}pp</td>
+                        <td>${stats.cv.toFixed(1)}%</td>
+                        <td>${stats.outliers}</td>
+                    `;
+                });
+            }
+
             createCandidateTrendChart(candidate, electorate);
             createDistributionChart(boothStats);
             createCandidateBoothMap(boothStats, electorate);
@@ -5485,6 +5520,56 @@ function createBoothFlipsChart() {
             }
         }
         
+        function getCandidateBoothPercentages(candidate, electorateData) {
+            const booths = (candidate.b || []).filter(b => isPhysicalBooth(b.n));
+            return booths.map(booth => {
+                let total = 0;
+                electorateData.forEach(c => {
+                    const b = (c.b || []).find(b => b.n === booth.n);
+                    if (b) total += b.v;
+                });
+                return total > 0 ? (booth.v / total * 100) : 0;
+            });
+        }
+
+        function calculateDistributionStats(percentages) {
+            if (percentages.length === 0) return { median: 0, iqr: 0, cv: 0, outliers: 0 };
+            percentages = percentages.filter(p => !isNaN(p)).sort((a, b) => a - b);
+            const median = percentages[Math.floor(percentages.length / 2)];
+            const q1 = percentages[Math.floor(percentages.length * 0.25)] || 0;
+            const q3 = percentages[Math.floor(percentages.length * 0.75)] || 0;
+            const iqr = q3 - q1;
+            const mean = percentages.reduce((sum, p) => sum + p, 0) / percentages.length;
+            const variance = percentages.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / percentages.length;
+            const stdDev = Math.sqrt(variance);
+            const cv = mean > 0 ? (stdDev / mean * 100) : 0;
+            const outliers = percentages.filter(p => Math.abs(p - mean) > 2 * stdDev).length;
+            return { median, iqr, cv, outliers };
+        }
+
+        function computeBenchmarkStats(year, electorate, candidateNorm, normalizedParty) {
+            const statewideData = getCurrentData(year, "state", "", "", "");
+            const electorateData = getCurrentData(year, "electorate", electorate, "", "");
+            const partyElectorate = electorateData.filter(c => normalizeParty(c.p) === normalizedParty);
+            const groups = {
+                "Party Statewide": statewideData.filter(c => normalizeParty(c.p) === normalizedParty && normalizeCandidateName(c.c) !== candidateNorm),
+                "Electorate All": electorateData.filter(c => normalizeCandidateName(c.c) !== candidateNorm),
+                "Electorate Party": partyElectorate.filter(c => normalizeCandidateName(c.c) !== candidateNorm),
+                "Statewide All": statewideData.filter(c => normalizeCandidateName(c.c) !== candidateNorm)
+            };
+            const results = {};
+            Object.entries(groups).forEach(([label, candidates]) => {
+                let percentages = [];
+                candidates.forEach(c => {
+                    const eData = getCurrentData(year, "electorate", c.d, "", "");
+                    percentages = percentages.concat(getCandidateBoothPercentages(c, eData));
+                });
+                results[label] = calculateDistributionStats(percentages);
+            });
+            return results;
+        }
+
+
         // Chart creation functions
         function createPartyChart(partyVotes) {
             const ctx = document.getElementById('partyChart');
